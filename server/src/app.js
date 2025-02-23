@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const itemRoutes = require('./routes/itemRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
@@ -13,7 +12,6 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/items', itemRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
