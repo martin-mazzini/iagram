@@ -1,6 +1,6 @@
 const OpenAIClient = require('./OpenAIClient');
 const Post = require('../../models/Post');
-const PostRepository = require('../../repositories/PostRepository');
+const DynamoPostRepository = require('../../repositories/DynamoPostRepository');
 
 class AIPostGenerationService {
     constructor() {
@@ -27,7 +27,8 @@ class AIPostGenerationService {
                 userId: user.id
             });
 
-            return PostRepository.create(post);
+            // Save to DynamoDB instead of in-memory repository
+            return DynamoPostRepository.create(post);
         } catch (error) {
             console.error('Error generating post:', error);
             throw new Error('Failed to generate post content');

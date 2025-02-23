@@ -8,52 +8,66 @@ class DynamoPostRepository extends BaseRepository {
     }
 
     async create(post) {
-        const item = {
-            PK: `USER#${post.userId}`,
-            SK: `POST#${post.id}`,
+        // Store the post with PK = POST#{id}
+        const postItem = {
+            PK: `POST#${post.id}`,
+            SK: 'DETAILS',
             ...post.toJSON()
         };
 
-        await this.put(item);
+        // Also create a reference in the user's posts
+        const userPostRef = {
+            PK: `USER#${post.userId}`,
+            SK: `POST#${post.id}`,
+            postId: post.id,
+            createdAt: post.createdAt
+        };
+
+        await Promise.all([
+            this.put(postItem),
+            this.put(userPostRef)
+        ]);
+
         return post;
     }
 
+    //finds a post by id including comments
+    //couldn't comments just be a json field in the post?
     async findById(id) {
-        // Query all items related to this post (post details and comments)
-        const params = {
-            TableName: this.tableName,
-            FilterExpression: 'contains(SK, :postId)',
-            ExpressionAttributeValues: {
-                ':postId': `POST#${id}`
-            }
-        };
-
-        const result = await this.dynamoDB.scan(params).promise();
-        if (!result.Items.length) return null;
-
-        const postItem = result.Items.find(item => !item.SK.includes('COMMENT'));
-        if (!postItem) return null;
+        const postData = await this.get(`POST#${id}`, 'DETAILS');
+        if (!postData) return null;
 
         const post = new Post({
-            ...postItem,
+            ...postData,
             id: id
         });
 
-        // Add comments
-        const comments = result.Items
-            .filter(item => item.SK.includes('COMMENT'))
-            .map(item => new Comment(item));
-        
-        post.comments = comments;
+        // Get associated comments
+        const comments = await this.query(`POST#${id}`, 'COMMENT#');
+        post.comments = comments.map(item => new Comment(item));
+
         return post;
     }
 
+    async findByUserId(userId) {
+        // Get all post references for this user
+        const postRefs = await this.query(`USER#${userId}`, 'POST#');
+        
+        // Get the full post details for each reference
+        const posts = await Promise.all(
+            postRefs.map(ref => this.findById(ref.postId))
+        );
+
+        return posts.sort((a, b) => b.createdAt - a.createdAt);
+    }
+
+    //this needs to be optimzied
     async findAllOrderedByDate() {
         const params = {
             TableName: this.tableName,
-            FilterExpression: 'begins_with(SK, :sk)',
+            FilterExpression: 'SK = :sk',
             ExpressionAttributeValues: {
-                ':sk': 'POST#'
+                ':sk': 'DETAILS'
             }
         };
 
@@ -72,11 +86,6 @@ class DynamoPostRepository extends BaseRepository {
 
         await this.put(item);
         return comment;
-    }
-
-    async findByUserId(userId) {
-        const results = await this.query(`USER#${userId}`, 'POST#');
-        return results.map(item => new Post(item));
     }
 }
 

@@ -5,6 +5,7 @@ class DynamoUserRepository extends BaseRepository {
     constructor() {
         super();
     }
+    
 
     async create(user) {
         const item = {
@@ -27,6 +28,7 @@ class DynamoUserRepository extends BaseRepository {
         });
     }
 
+    //this needs to be optimized
     async findAll() {
         // Note: In production, you might want to use a GSI for this
         const params = {
