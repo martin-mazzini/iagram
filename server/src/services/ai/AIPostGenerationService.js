@@ -11,14 +11,19 @@ class AIPostGenerationService {
         const prompt = this._createPromptFromUser(user);
         
         try {
-            const response = await this.openAIClient.generateResponse(prompt, {
+            // Generate text content first
+            const textResponse = await this.openAIClient.generateResponse(prompt, {
                 max_tokens: 200,
-                temperature: 0.8 // Slightly higher for more creative responses
+                temperature: 0.8
             });
 
+            // Generate image based on the text content
+            const imagePrompt = this._createImagePromptFromContent(textResponse.content, user);
+            const imageUrl = await this.openAIClient.generateImage(imagePrompt);
+
             const post = new Post({
-                content: response.content,
-                imageUrl: null, // We'll handle image generation later
+                content: textResponse.content,
+                imageUrl: imageUrl,
                 userId: user.id
             });
 
@@ -46,6 +51,20 @@ The post should:
 - Relate to one or more of their interests
 
 Generate only the post content, no additional explanations.`;
+    }
+
+    _createImagePromptFromContent(content, user) {
+        return `Create an image for an Instagram post by a ${user.interests[0]} enthusiast. 
+The post content is: "${content}"
+
+The image should:
+- Be visually appealing and professional
+- Match the mood and topic of the post
+- Look authentic and personal
+- Be suitable for Instagram
+- Reflect the user's interests: ${user.interests.join(', ')}
+- Have good composition and lighting
+- Be in a style that would get engagement on social media`;
     }
 }
 
