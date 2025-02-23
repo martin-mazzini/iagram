@@ -8,6 +8,7 @@ console.log("OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
 const app = require('./src/app');
 const BackgroundJobService = require('./src/services/jobs/BackgroundJobService');
 const AIPostGenerationJob = require('./src/services/jobs/AIPostGenerationJob');
+const MockDataService = require('./src/services/data/MockDataService');
 
 
 const PORT = process.env.PORT || 5000;
@@ -23,9 +24,19 @@ function initializeBackgroundJobs() {
     );
 }
 
+// Initialize background jobs and mock data
+function initializeServices() {
+    // Initialize background jobs
+    initializeBackgroundJobs();
+    
+    // Initialize mock data
+    const mockUsers = MockDataService.initializeMockData();
+    console.log(`Initialized application with ${mockUsers.length} mock users`);
+}
+
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  initializeBackgroundJobs();
+  initializeServices();
 });
 
 // Handle graceful shutdown
