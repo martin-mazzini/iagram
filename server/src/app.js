@@ -4,6 +4,7 @@ const itemRoutes = require('./routes/itemRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const path = require('path');
 
+
 const app = express();
 
 app.use(cors());
