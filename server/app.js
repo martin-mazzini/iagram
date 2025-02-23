@@ -1,5 +1,10 @@
-console.log("hi")
-require('dotenv').config();
+console.log("Current directory:", process.cwd());
+const path = require('path');
+const result = require('dotenv').config();
+console.log("Dotenv result:", result);
+console.log("OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
+
+
 const app = require('./src/app');
 
 
