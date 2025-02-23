@@ -1,11 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const UserRepository = require('../repositories/UserRepository');
+const DynamoUserRepository = require('../repositories/DynamoUserRepository');
 const AIPostGenerationService = require('../services/ai/AIPostGenerationService');
 
-router.get('/', (req, res) => {
-    const users = UserRepository.findAll();
-    res.json(users);
+router.get('/', async (req, res) => {
+    try {
+        const users = await DynamoUserRepository.findAll();
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Failed to fetch users' });
+    }
 });
 
 // New endpoint to generate a post for a specific user
@@ -14,7 +19,7 @@ router.get('/:userId/post', async (req, res) => {
         console.log('\n=== Post Generation Request ===');
         console.log('Requested for userId:', req.params.userId);
         
-        const user = UserRepository.findById(req.params.userId);
+        const user = await DynamoUserRepository.findById(req.params.userId);
         
         if (!user) {
             console.log('User not found:', req.params.userId);

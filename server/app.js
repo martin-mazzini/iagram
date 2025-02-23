@@ -9,6 +9,7 @@ const app = require('./src/app');
 const BackgroundJobService = require('./src/services/jobs/BackgroundJobService');
 const AIPostGenerationJob = require('./src/services/jobs/AIPostGenerationJob');
 const MockDataService = require('./src/services/data/MockDataService');
+const { createTable } = require('./src/config/dynamodb');
 
 
 const PORT = process.env.PORT || 5000;
@@ -24,19 +25,27 @@ function initializeBackgroundJobs() {
     );
 }
 
-// Initialize background jobs and mock data
-function initializeServices() {
-    // Initialize background jobs
-    initializeBackgroundJobs();
-    
-    // Initialize mock data
-    const mockUsers = MockDataService.initializeMockData();
-    console.log(`Initialized application with ${mockUsers.length} mock users`);
+// Initialize DynamoDB table and other services
+async function initializeServices() {
+    try {
+        // Create DynamoDB table
+        await createTable();
+        
+        // Initialize background jobs
+        initializeBackgroundJobs();
+        
+        // Initialize mock data
+        const mockUsers = await MockDataService.initializeMockData();
+        console.log(`Initialized application with ${mockUsers.length} mock users`);
+    } catch (error) {
+        console.error('Error initializing services:', error);
+        throw error;
+    }
 }
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  initializeServices();
+app.listen(PORT, async () => {
+    console.log(`Server is running on port ${PORT}`);
+    await initializeServices();
 });
 
 // Handle graceful shutdown

@@ -1,5 +1,5 @@
 const User = require('../../models/User');
-const UserRepository = require('../../repositories/UserRepository');
+const DynamoUserRepository = require('../../repositories/DynamoUserRepository');
 
 const MOCK_USERS = [
     {
@@ -35,8 +35,8 @@ const MOCK_USERS = [
 ];
 
 class MockDataService {
-    static initializeMockData() {
-        console.log('Initializing mock users...');
+    static async initializeMockData() {
+        console.log('Initializing mock users in DynamoDB...');
         
         const users = MOCK_USERS.map(userData => {
             const user = new User(userData);
@@ -58,13 +58,18 @@ class MockDataService {
             }
         });
 
-        // Save all users to repository
-        users.forEach(user => {
-            UserRepository.create(user);
-            console.log(`Created mock user: ${user.id} with ${user.friends.length} friends`);
-        });
+        // Save all users to DynamoDB
+        try {
+            for (const user of users) {
+                await DynamoUserRepository.create(user);
+                console.log(`Created mock user in DynamoDB: ${user.id} with ${user.friends.length} friends`);
+            }
+        } catch (error) {
+            console.error('Error initializing mock data in DynamoDB:', error);
+            throw error;
+        }
 
-        console.log(`Initialized ${users.length} mock users`);
+        console.log(`Initialized ${users.length} mock users in DynamoDB`);
         return users;
     }
 }
