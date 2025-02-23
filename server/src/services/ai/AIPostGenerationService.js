@@ -58,14 +58,12 @@ Generate only the post content, no additional explanations.`;
 The post content is: "${content}"
 
 The image should:
-- Be visually appealing and professional
+- Be a realistic Instagram post image (so not overly professional except if it's a professional product)
+- Should look like a photo taken from a cellphone 
 - Match the mood and topic of the post
 - Look authentic and personal
-- Be suitable for Instagram
-- Reflect the user's interests: ${user.interests.join(', ')}
-- Have good composition and lighting
-- Be in a style that would get engagement on social media`;
+- Reflect the user's interests: ${user.interests.join(', ')}`;
     }
 }
 
-module.exports = new AIPostGenerationService(); 
+module.exports = new AIPostGenerationService();

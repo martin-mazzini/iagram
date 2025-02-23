@@ -40,7 +40,7 @@ class OpenAIClient {
     try {
       const response = await this.client.images.generate({
         model: "dall-e-3",
-        prompt: `Create a realistic, Instagram-worthy image of: ${prompt}. The image should be high quality and visually appealing, suitable for social media.`,
+        prompt: `Create image given this description: ${prompt}.`,
         n: 1,
         size: "1024x1024",
         quality: "standard",
