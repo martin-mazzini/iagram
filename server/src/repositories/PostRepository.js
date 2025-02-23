@@ -57,6 +57,11 @@ class PostRepository {
             .filter(post => user.friends.includes(post.userId))
             .sort((a, b) => b.createdAt - a.createdAt);
     }
+
+    findAllOrderedByDate() {
+        return Array.from(this.posts.values())
+            .sort((a, b) => b.createdAt - a.createdAt);
+    }
 }
 
 module.exports = new PostRepository(); // Export singleton instance 

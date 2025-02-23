@@ -3,6 +3,7 @@ const cors = require('cors');
 const itemRoutes = require('./routes/itemRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
+const postRoutes = require('./routes/postRoutes');
 const path = require('path');
 
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use('/api/items', itemRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
 
 // this might not be needed at all because
 app.use(express.static(path.join(__dirname, '../../client/public')));
