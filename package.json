@@ -5,10 +5,12 @@
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "start:debug": "concurrently \"npm run server:debug\" \"npm run client\"",
-    "server": "cd server && npm run dev",
-    "server:debug": "cd server && npm run debug",
+    "server": "cd server && npm run dev:local",
+    "server:debug": "cd server && npm run debug:local",
     "client": "cd client && npm start",
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install"
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "db:up": "cd server && npm run db:up",
+    "db:down": "cd server && npm run db:down"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
