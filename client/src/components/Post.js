@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaHeart, FaRegHeart, FaRegComment, FaRegBookmark, FaBookmark, FaRegPaperPlane } from 'react-icons/fa';
 
-const Post = ({ username, userImage, image, caption, likes, comments, timestamp }) => {
+const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likesCount, setLikesCount] = useState(likes);
@@ -16,17 +16,17 @@ const Post = ({ username, userImage, image, caption, likes, comments, timestamp 
       {/* Post Header */}
       <div className="flex items-center p-3">
         <img 
-          src={userImage} 
-          alt={username}
+          src={`https://i.pravatar.cc/150?u=${userId}`}
+          alt="User avatar"
           className="h-8 w-8 rounded-full object-cover"
         />
-        <span className="ml-3 font-semibold">{username}</span>
+        <span className="ml-3 font-semibold">User {userId.slice(0, 8)}</span>
       </div>
 
       {/* Post Image */}
       <div className="relative">
         <img 
-          src={image} 
+          src={imageUrl} 
           alt="Post content"
           className="w-full object-cover"
           onDoubleClick={handleLike}
@@ -66,21 +66,21 @@ const Post = ({ username, userImage, image, caption, likes, comments, timestamp 
         </div>
 
         {/* Caption */}
-        <div className="mt-1">
-          <span className="font-semibold mr-2">{username}</span>
-          <span>{caption}</span>
+        <div className="mt-1 px-3">
+          <span className="font-semibold mr-2">User {userId.slice(0, 8)}</span>
+          <span>{content}</span>
         </div>
 
         {/* Comments */}
-        {comments.length > 0 && (
-          <div className="mt-2 text-gray-500">
+        {comments && comments.length > 0 && (
+          <div className="mt-2 px-3 text-gray-500">
             <button>View all {comments.length} comments</button>
           </div>
         )}
 
         {/* Timestamp */}
-        <div className="mt-2 text-xs text-gray-500 uppercase">
-          {timestamp}
+        <div className="mt-2 px-3 text-xs text-gray-500 uppercase">
+          {new Date(createdAt).toLocaleDateString()}
         </div>
       </div>
 

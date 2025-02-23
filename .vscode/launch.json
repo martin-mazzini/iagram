@@ -14,8 +14,6 @@
             ],
             "port": 9229,
             "restart": true,
-            "runtimeExecutable": "nodemon",
-            "console":"integratedTerminal",
             "cwd":"${workspaceFolder}\\server"
 
         }
