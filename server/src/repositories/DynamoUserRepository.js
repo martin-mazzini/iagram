@@ -22,10 +22,7 @@ class DynamoUserRepository extends BaseRepository {
         const result = await this.get(`USER#${id}`, 'PROFILE');
         if (!result) return null;
 
-        return new User({
-            ...result,
-            id: id // Extract ID from PK
-        });
+        return new User(result);
     }
 
     //this needs to be optimized
@@ -40,10 +37,7 @@ class DynamoUserRepository extends BaseRepository {
         };
 
         const result = await this.dynamoDB.scan(params).promise();
-        return result.Items.map(item => new User({
-            ...item,
-            id: item.PK.split('#')[1]
-        }));
+        return result.Items.map(item => new User(item));
     }
 
     async update(user) {

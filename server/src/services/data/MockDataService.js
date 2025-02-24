@@ -38,12 +38,7 @@ class MockDataService {
     static async initializeMockData() {
         console.log('Initializing mock users in DynamoDB...');
         
-        const users = MOCK_USERS.map(userData => {
-            const user = new User(userData);
-            // Override the auto-generated UUID with our hardcoded one
-            user.id = userData.id;
-            return user;
-        });
+        const users = MOCK_USERS.map(userData => new User(userData));
         
         // Create friendship connections between users
         users.forEach((user, index) => {

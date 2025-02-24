@@ -2,12 +2,13 @@ const { v4: uuidv4 } = require('uuid');
 
 class User {
     constructor({
+        id,
         personality,
         biography,
         interests,
         friends = []
     }) {
-        this.id = uuidv4();
+        this.id = id;
         this.personality = personality;
         this.biography = biography;
         this.interests = interests;
