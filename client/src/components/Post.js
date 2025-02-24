@@ -20,7 +20,7 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
           alt="User avatar"
           className="h-8 w-8 rounded-full object-cover"
         />
-        <span className="ml-3 font-semibold">User {userId.slice(0, 8)}</span>
+        <span className="ml-3 font-semibold">User {userId}</span>
       </div>
 
       {/* Post Image */}

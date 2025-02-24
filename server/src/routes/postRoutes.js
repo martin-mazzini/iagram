@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const DynamoPostRepository = require('../repositories/DynamoPostRepository');
+const Comment = require('../models/Comment');
 
 // Get all posts
 router.get('/', async (req, res) => {

@@ -65,6 +65,44 @@ The image should:
 - Look authentic and personal
 - Reflect the user's interests: ${user.interests.join(', ')}`;
     }
+
+    async generateCommentForPost(user, post) {
+        const prompt = this._createCommentPrompt(user, post);
+        
+        try {
+            const response = await this.openAIClient.generateResponse(prompt, {
+                max_tokens: 100,
+                temperature: 0.8
+            });
+
+            return response.content;
+        } catch (error) {
+            console.error('Error generating comment:', error);
+            throw new Error('Failed to generate comment');
+        }
+    }
+
+    _createCommentPrompt(user, post) {
+        return `Generate a realistic, engaging Instagram comment for a user responding to their friend's post.
+
+User characteristics:
+Personality: ${user.personality}
+Interests: ${user.interests.join(', ')}
+
+Friend's post content:
+"${post.content}"
+
+The comment should:
+- Be written in a casual, social media style
+- Match the user's personality and tone
+- Be between 1-2 sentences
+- Potentially include 1-2 relevant emojis
+- Feel authentic and personal
+- Show genuine engagement with the post content
+- Avoid generic responses like "Great post!" or "Nice!"
+
+Generate only the comment text, no additional explanations.`;
+    }
 }
 
 module.exports = new AIPostGenerationService();
