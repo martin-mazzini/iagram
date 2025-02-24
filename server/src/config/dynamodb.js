@@ -1,24 +1,23 @@
 const AWS = require('aws-sdk');
 
 // Configure AWS to use local DynamoDB
-const dynamoDB = new AWS.DynamoDB.DocumentClient({
+const config = {
     region: 'localhost',
     endpoint: 'http://localhost:8000',
     accessKeyId: 'dummy',
-    secretAccessKey: 'dummy'
-});
+    secretAccessKey: 'dummy',
+    // Add this to ensure proper local DynamoDB connection
+    sslEnabled: false,
+    logger: console
+};
+
+const dynamoDB = new AWS.DynamoDB.DocumentClient(config);
+const dynamoDb = new AWS.DynamoDB(config);
 
 const TableName = 'SocialMediaTable';
 
 // Initialize table
 const createTable = async () => {
-    const dynamoDb = new AWS.DynamoDB({
-        region: 'localhost',
-        endpoint: 'http://localhost:8000',
-        accessKeyId: 'dummy',
-        secretAccessKey: 'dummy'
-    });
-
     const params = {
         TableName,
         KeySchema: [

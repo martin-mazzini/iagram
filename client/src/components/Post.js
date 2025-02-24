@@ -5,6 +5,7 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likesCount, setLikesCount] = useState(likes);
+  const [showAllComments, setShowAllComments] = useState(false);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -71,10 +72,47 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
           <span>{content}</span>
         </div>
 
-        {/* Comments */}
+        {/* Comments Section */}
         {comments && comments.length > 0 && (
-          <div className="mt-2 px-3 text-gray-500">
-            <button>View all {comments.length} comments</button>
+          <div className="mt-2 px-3">
+            {showAllComments ? (
+              // Show all comments
+              <div className="space-y-2">
+                {comments.map((comment, index) => (
+                  <div key={index} className="text-sm">
+                    <span className="font-semibold mr-2">{comment.userId}</span>
+                    <span>{comment.content}</span>
+                  </div>
+                ))}
+                <button 
+                  className="text-gray-500 text-sm"
+                  onClick={() => setShowAllComments(false)}
+                >
+                  Show less
+                </button>
+              </div>
+            ) : (
+              // Show preview and view more button
+              <div>
+                {/* Preview first two comments */}
+                <div className="space-y-2">
+                  {comments.slice(0, 2).map((comment, index) => (
+                    <div key={index} className="text-sm">
+                      <span className="font-semibold mr-2">{comment.userId}</span>
+                      <span>{comment.content}</span>
+                    </div>
+                  ))}
+                </div>
+                {comments.length > 2 && (
+                  <button 
+                    className="text-gray-500 text-sm"
+                    onClick={() => setShowAllComments(true)}
+                  >
+                    View all {comments.length} comments
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 

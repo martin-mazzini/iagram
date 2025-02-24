@@ -55,11 +55,6 @@ router.get('/:userId/comment/:friendId', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        // Check if the specified friend is actually a friend
-        if (!user.friends || !user.friends.includes(req.params.friendId)) {
-            return res.status(400).json({ error: 'Specified user is not a friend' });
-        }
-
         // Get friend's posts
         const friendPosts = await DynamoPostRepository.findByUserId(req.params.friendId);
         if (!friendPosts || !friendPosts.length) {
