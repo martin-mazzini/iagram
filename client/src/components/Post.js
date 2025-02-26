@@ -78,10 +78,10 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
             {showAllComments ? (
               // Show all comments
               <div className="space-y-2">
-                {comments.map((comment, index) => (
-                  <div key={index} className="text-sm">
-                    <span className="font-semibold mr-2">{comment.userId}</span>
-                    <span>{comment.content}</span>
+                {comments.map((comment) => (
+                  <div key={comment.id} className="text-sm">
+                    <span className="font-semibold mr-2">User {comment.userId.slice(0, 8)}</span>
+                    <span>{comment.text}</span>
                   </div>
                 ))}
                 <button 
@@ -96,10 +96,10 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
               <div>
                 {/* Preview first two comments */}
                 <div className="space-y-2">
-                  {comments.slice(0, 2).map((comment, index) => (
-                    <div key={index} className="text-sm">
-                      <span className="font-semibold mr-2">{comment.userId}</span>
-                      <span>{comment.content}</span>
+                  {comments.slice(0, 2).map((comment) => (
+                    <div key={comment.id} className="text-sm">
+                      <span className="font-semibold mr-2">User {comment.userId.slice(0, 8)}</span>
+                      <span>{comment.text}</span>
                     </div>
                   ))}
                 </div>
