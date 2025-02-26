@@ -12,6 +12,20 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
     setLikesCount(isLiked ? likesCount - 1 : likesCount + 1);
   };
 
+  const renderComment = (comment) => (
+    <div key={comment.id} className="text-sm flex items-center space-x-2">
+      <img 
+        src={`https://i.pravatar.cc/150?u=${comment.userId}`}
+        alt="Commenter avatar"
+        className="h-6 w-6 rounded-full object-cover"
+      />
+      <div>
+        <span className="font-semibold mr-2">User {comment.userId.slice(0, 8)}</span>
+        <span>{comment.text}</span>
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-white border border-gray-200 rounded-sm mb-4 max-w-xl mx-auto">
       {/* Post Header */}
@@ -67,7 +81,7 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
         </div>
 
         {/* Caption */}
-        <div className="mt-1 px-3">
+        <div className="mt-1">
           <span className="font-semibold mr-2">User {userId.slice(0, 8)}</span>
           <span>{content}</span>
         </div>
@@ -78,12 +92,7 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
             {showAllComments ? (
               // Show all comments
               <div className="space-y-2">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="text-sm">
-                    <span className="font-semibold mr-2">User {comment.userId.slice(0, 8)}</span>
-                    <span>{comment.text}</span>
-                  </div>
-                ))}
+                {comments.map(renderComment)}
                 <button 
                   className="text-gray-500 text-sm"
                   onClick={() => setShowAllComments(false)}
@@ -96,12 +105,7 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
               <div>
                 {/* Preview first two comments */}
                 <div className="space-y-2">
-                  {comments.slice(0, 2).map((comment) => (
-                    <div key={comment.id} className="text-sm">
-                      <span className="font-semibold mr-2">User {comment.userId.slice(0, 8)}</span>
-                      <span>{comment.text}</span>
-                    </div>
-                  ))}
+                  {comments.slice(0, 2).map(renderComment)}
                 </div>
                 {comments.length > 2 && (
                   <button 
