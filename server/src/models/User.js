@@ -3,12 +3,14 @@ const { v4: uuidv4 } = require('uuid');
 class User {
     constructor({
         id,
+        username,
         personality,
         biography,
         interests,
         friends = []
     }) {
         this.id = id;
+        this.username = username || `user_${id.slice(0, 8)}`;
         this.personality = personality;
         this.biography = biography;
         this.interests = interests;
@@ -32,6 +34,7 @@ class User {
     toJSON() {
         return {
             id: this.id,
+            username: this.username,
             personality: this.personality,
             biography: this.biography,
             interests: this.interests,

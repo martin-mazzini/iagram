@@ -74,6 +74,7 @@ router.get('/:userId/comment/:friendId', async (req, res) => {
         const comment = new Comment({
             text: commentText,
             userId: user.id,
+            username: user.username,
             postId: targetPost.id
         });
 

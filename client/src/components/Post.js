@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaHeart, FaRegHeart, FaRegComment, FaRegBookmark, FaBookmark, FaRegPaperPlane } from 'react-icons/fa';
 
-const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => {
+const Post = ({ id, content, imageUrl, userId, username, likes, comments, createdAt }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likesCount, setLikesCount] = useState(likes);
@@ -20,7 +20,7 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
         className="h-6 w-6 rounded-full object-cover"
       />
       <div>
-        <span className="font-semibold mr-2">User {comment.userId.slice(0, 8)}</span>
+        <span className="font-semibold mr-2">{comment.username}</span>
         <span>{comment.text}</span>
       </div>
     </div>
@@ -35,7 +35,7 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
           alt="User avatar"
           className="h-8 w-8 rounded-full object-cover"
         />
-        <span className="ml-3 font-semibold">User {userId}</span>
+        <span className="ml-3 font-semibold">{username}</span>
       </div>
 
       {/* Post Image */}
@@ -82,7 +82,7 @@ const Post = ({ id, content, imageUrl, userId, likes, comments, createdAt }) => 
 
         {/* Caption */}
         <div className="mt-1">
-          <span className="font-semibold mr-2">User {userId.slice(0, 8)}</span>
+          <span className="font-semibold mr-2">{username}</span>
           <span>{content}</span>
         </div>
 

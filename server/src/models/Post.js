@@ -45,6 +45,7 @@ class Post {
             content: this.content,
             imageUrl: this.imageUrl,
             userId: this.userId,
+            username: this.username,
             likes: this.likes,
             comments: this.comments.map(comment => comment.toJSON()),
             createdAt: this.createdAt,

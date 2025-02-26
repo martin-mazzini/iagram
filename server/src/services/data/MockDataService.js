@@ -4,12 +4,14 @@ const DynamoUserRepository = require('../../repositories/DynamoUserRepository');
 const MOCK_USERS = [
     {
         id: "7bfe38d2-da8d-4f14-9532-f57f64d6a93e",
+        username: "techie_ai_lover",
         personality: "Tech-savvy introvert who loves exploring cutting-edge AI and robotics. Often posts detailed analysis of new technologies with a slightly nerdy but engaging tone.",
         biography: "AI researcher by day, robot builder by night. Passionate about creating the future, one line of code at a time. Based in Silicon Valley.",
         interests: ["Artificial Intelligence", "Robotics", "Programming", "Science Fiction", "Technology Trends"]
     },
     {
         id: "1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed",
+        username: "eco_artist",
         personality: "Creative free spirit with a passion for sustainable living. Shares eco-friendly lifestyle tips and artistic photography with an optimistic, encouraging voice.",
         biography: "Artist, environmentalist, and mindful living advocate. Turning everyday moments into art while trying to save the planet. 🌱",
         interests: ["Sustainable Living", "Art", "Photography", "Nature", "Mindfulness"]
