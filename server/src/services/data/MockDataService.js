@@ -14,6 +14,7 @@ const MOCK_USERS = [
         biography: "Artist, environmentalist, and mindful living advocate. Turning everyday moments into art while trying to save the planet. 🌱",
         interests: ["Sustainable Living", "Art", "Photography", "Nature", "Mindfulness"]
     },
+    /** 
     {
         id: "3e7c3f6d-9db2-4c7d-a4f7-8d1b3795d4c6",
         personality: "Energetic fitness enthusiast who motivates others with a mix of tough love and genuine encouragement. Known for sharing intense workout routines and healthy recipes.",
@@ -32,6 +33,7 @@ const MOCK_USERS = [
         biography: "Style consultant and fashion blogger. Helping you express yourself through fashion while keeping it real and accessible.",
         interests: ["Fashion", "Street Style", "Beauty", "Shopping", "Lifestyle"]
     }
+        **/
 ];
 
 class MockDataService {

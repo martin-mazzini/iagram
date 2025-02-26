@@ -72,9 +72,15 @@ class DynamoPostRepository extends BaseRepository {
         };
 
         const result = await this.dynamoDB.scan(params).promise();
-        return result.Items
-            .map(item => new Post(item))
-            .sort((a, b) => b.createdAt - a.createdAt);
+        const posts = result.Items.map(item => new Post(item));
+        
+        // Get comments for each post
+        await Promise.all(posts.map(async (post) => {
+            const comments = await this.query(`POST#${post.id}`, 'COMMENT#');
+            post.comments = comments.map(item => new Comment(item));
+        }));
+
+        return posts.sort((a, b) => b.createdAt - a.createdAt);
     }
 
     async addComment(postId, comment) {

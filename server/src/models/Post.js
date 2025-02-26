@@ -2,11 +2,12 @@ const { v4: uuidv4 } = require('uuid');
 
 class Post {
     constructor({
+        id,
         content,
         imageUrl,
         userId
     }) {
-        this.id = uuidv4();
+        this.id = id || uuidv4();
         this.content = content;
         this.imageUrl = imageUrl;
         this.userId = userId;
