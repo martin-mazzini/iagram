@@ -42,16 +42,17 @@ router.get('/:id', async (req, res) => {
 // Add a comment to a post
 router.post('/:id/comments', async (req, res) => {
     try {
-        const { text, userId } = req.body;
+        const { text, userId, username } = req.body;
         const postId = req.params.id;
 
-        if (!text || !userId) {
-            return res.status(400).json({ error: 'Text and userId are required' });
+        if (!text || !userId || !username) {
+            return res.status(400).json({ error: 'Text, userId, and username are required' });
         }
 
         const comment = new Comment({
             text,
             userId,
+            username,
             postId
         });
 

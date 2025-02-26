@@ -24,7 +24,8 @@ class AIPostGenerationService {
             const post = new Post({
                 content: textResponse.content,
                 imageUrl: imageUrl,
-                userId: user.id
+                userId: user.id,
+                username: user.username
             });
 
             // Save to DynamoDB instead of in-memory repository
