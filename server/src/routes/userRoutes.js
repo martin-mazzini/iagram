@@ -4,6 +4,8 @@ const DynamoUserRepository = require('../repositories/DynamoUserRepository');
 const DynamoPostRepository = require('../repositories/DynamoPostRepository');
 const AIPostGenerationService = require('../services/ai/AIPostGenerationService');
 const Comment = require('../models/Comment');
+const { v4: uuidv4 } = require('uuid');
+const User = require('../models/User');
 
 router.get('/', async (req, res) => {
     try {
@@ -91,6 +93,56 @@ router.get('/:userId/comment/:friendId', async (req, res) => {
     } catch (error) {
         console.error('Error in comment generation endpoint:', error);
         res.status(500).json({ error: 'Failed to generate and post comment' });
+    }
+});
+
+// Generate a new AI user
+router.get('/generate', async (req, res) => {
+    try {
+        console.log('\n=== AI User Generation Request ===');
+        
+        // Generate user profile using AI
+        const userProfile = await AIPostGenerationService.generateUserProfile();
+        
+        // Create new User instance
+        const user = new User(userProfile);
+        
+        // Save to DynamoDB
+        const savedUser = await DynamoUserRepository.create(user);
+        
+        console.log('\n=== User Generation Complete ===');
+        console.log('Generated user:', savedUser);
+        
+        res.status(201).json(savedUser);
+    } catch (error) {
+        console.error('Error generating user:', error);
+        res.status(500).json({ error: 'Failed to generate user' });
+    }
+});
+
+// Generate multiple AI users
+router.post('/generate/batch', async (req, res) => {
+    try {
+        const count = parseInt(req.query.count) || 1;
+        if (count < 1 || count > 10) {
+            return res.status(400).json({ error: 'Count must be between 1 and 10' });
+        }
+
+        console.log(`\n=== Generating ${count} AI Users ===`);
+        
+        const generatedUsers = [];
+        for (let i = 0; i < count; i++) {
+            const userProfile = await AIPostGenerationService.generateUserProfile();
+            const user = new User(userProfile);
+            const savedUser = await DynamoUserRepository.create(user);
+            generatedUsers.push(savedUser);
+        }
+        
+        console.log(`\n=== Generated ${count} Users Successfully ===`);
+        res.status(201).json(generatedUsers);
+    } catch (error) {
+        console.error('Error generating users:', error);
+        res.status(500).json({ error: 'Failed to generate users' });
     }
 });
 

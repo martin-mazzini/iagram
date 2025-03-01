@@ -104,6 +104,31 @@ The comment should:
 
 Generate only the comment text, no additional explanations.`;
     }
+
+    async generateUserProfile() {
+        try {
+            const userData = await this.openAIClient.generateUserProfile();
+            // Transform the AI response into our User model format
+            const userModelData = {
+                id: require('uuid').v4(),
+                username: userData.instagram_username,
+                age: userData.age,
+                gender: userData.gender,
+                personality: userData.personality,
+                biography: userData.biography,
+                nationality: userData.nationality,
+                socioeconomicStatus: userData.socioeconomic_status,
+                politicalOrientation: userData.political_orientation,
+                interests: Array.isArray(userData.interests) ? userData.interests : [userData.interests],
+                friends: []
+            };
+
+            return userModelData;
+        } catch (error) {
+            console.error('Error in generateUserProfile:', error);
+            throw new Error('Failed to generate user profile');
+        }
+    }
 }
 
 module.exports = new AIPostGenerationService();

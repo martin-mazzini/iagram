@@ -89,6 +89,43 @@ class OpenAIClient {
       throw new Error('Failed to download and save image');
     }
   }
+
+  async generateUserProfile() {
+    const prompt = `Generate a possible human character by filling the following fields. Output should be JSON format with the respective keys:
+age:
+gender:
+personality: A short description of psychology, base yourself on the Big Five.
+biography: A short biography
+socioeconomic status:
+political orientation:
+nationality:
+interests:
+name:
+instagram_username:
+
+The response should be valid JSON format.`;
+
+    try {
+      const response = await this.generateResponse(prompt, {
+        temperature: 0.8,
+        max_tokens: 500
+      });
+
+      console.log('\n=== ChatGPT User Profile Response ===');
+      console.log('Raw response:', response.content);
+      
+      const parsedResponse = JSON.parse(response.content);
+      console.log('Parsed JSON:', JSON.stringify(parsedResponse, null, 2));
+      
+      return parsedResponse;
+    } catch (error) {
+      console.error('Error generating user profile:', error);
+      if (error instanceof SyntaxError) {
+        console.error('Invalid JSON received from ChatGPT:', response.content);
+      }
+      throw new Error('Failed to generate user profile');
+    }
+  }
 }
 
 module.exports = OpenAIClient; 
