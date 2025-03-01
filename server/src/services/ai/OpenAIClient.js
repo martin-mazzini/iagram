@@ -96,8 +96,8 @@ age:
 gender:
 personality: A short description of psychology, base yourself on the Big Five.
 biography: A short biography
-socioeconomic status:
-political orientation:
+socioeconomic_status:
+political_orientation:
 nationality:
 interests:
 name:
