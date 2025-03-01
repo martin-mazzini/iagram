@@ -11,24 +11,26 @@ class AIPostGenerationService {
         const prompt = this._createPromptFromUser(user);
         
         try {
-            // Generate text content first
-            const textResponse = await this.openAIClient.generateResponse(prompt, {
-                max_tokens: 200,
+            // Generate both text content and photo description
+            const response = await this.openAIClient.generateResponse(prompt, {
+                max_tokens: 300,
                 temperature: 0.8
             });
 
-            // Generate image based on the text content
-            const imagePrompt = this._createImagePromptFromContent(textResponse.content, user);
-            const imageUrl = await this.openAIClient.generateImage(imagePrompt);
+            // Parse the JSON response
+            const parsedResponse = JSON.parse(response.content);
+            
+            // Generate image based on the photo description
+            const imageUrl = await this.openAIClient.generateImage(parsedResponse.photo);
 
             const post = new Post({
-                content: textResponse.content,
+                content: parsedResponse.content,
                 imageUrl: imageUrl,
                 userId: user.id,
                 username: user.username
             });
 
-            // Save to DynamoDB instead of in-memory repository
+            // Save to DynamoDB
             return DynamoPostRepository.create(post);
         } catch (error) {
             console.error('Error generating post:', error);
@@ -37,22 +39,13 @@ class AIPostGenerationService {
     }
 
     _createPromptFromUser(user) {
-        return `Create a realistic, engaging Instagram post for a user with the following characteristics:
+        return `Create a realistic Instagram post for a user. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Think of REAL instagram posts, for a user with the following characteristics. Note: The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
+The output should be valid JSON with two keys:
+photo: a description of the photo that would accompany the post.
+content: the Post text content.
 
-Personality: ${user.personality}
-Biography: ${user.biography}
-Interests: ${user.interests.join(', ')}
-
-The post should:
-- Be written in first person
-- Match the user's personality and tone
-- Include relevant emojis
-- Be between 1-3 sentences
-- Potentially include 1-2 relevant hashtags
-- Feel authentic and personal
-- Relate to one or more of their interests
-
-Generate only the post content, no additional explanations.`;
+The user in question has the following characteristics:
+${JSON.stringify(user, null, 2)}`;
     }
 
     _createImagePromptFromContent(content, user) {
