@@ -4,6 +4,13 @@ const result = require('dotenv').config();
 console.log("Dotenv result:", result);
 console.log("OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
 
+// Add logging of OpenAI configuration
+console.log("\n=== OpenAI Configuration ===");
+console.log("Model:", process.env.OPENAI_MODEL);
+console.log("Max Tokens (Post):", process.env.MAX_TOKENS_POST);
+console.log("Max Tokens (Comment):", process.env.MAX_TOKENS_COMMENT);
+console.log("Max Tokens (Profile):", process.env.MAX_TOKENS_PROFILE);
+console.log("===========================\n");
 
 const app = require('./src/app');
 const BackgroundJobService = require('./src/services/jobs/BackgroundJobService');
