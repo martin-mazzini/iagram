@@ -21,7 +21,9 @@ class AIPostGenerationService {
             const parsedResponse = JSON.parse(response.content);
             
             // Generate image based on the photo description
-            const imageUrl = await this.openAIClient.generateImage(parsedResponse.photo);
+            const imagePrompt = `Generate a realistic photo of: ${parsedResponse.photo}, as it would be
+            taken by someone with the following characteristics: ${JSON.stringify(user, null, 2)}`;
+            const imageUrl = await this.openAIClient.generateImage(imagePrompt);
 
             const post = new Post({
                 content: parsedResponse.content,
@@ -46,18 +48,6 @@ content: the Post text content.
 
 The user in question has the following characteristics:
 ${JSON.stringify(user, null, 2)}`;
-    }
-
-    _createImagePromptFromContent(content, user) {
-        return `Create an image for an Instagram post by a ${user.interests[0]} enthusiast. 
-The post content is: "${content}"
-
-The image should:
-- Be a realistic Instagram post image (so not overly professional except if it's a professional product)
-- Should look like a photo taken from a cellphone 
-- Match the mood and topic of the post
-- Look authentic and personal
-- Reflect the user's interests: ${user.interests.join(', ')}`;
     }
 
     async generateCommentForPost(user, post) {
