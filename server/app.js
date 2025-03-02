@@ -11,6 +11,7 @@ console.log("Max Tokens (Post):", process.env.MAX_TOKENS_POST);
 console.log("Max Tokens (Comment):", process.env.MAX_TOKENS_COMMENT);
 console.log("Max Tokens (Profile):", process.env.MAX_TOKENS_PROFILE);
 console.log("Min Post Charactersss:", process.env.MIN_POST_CHARS);
+console.log("Min User Bio/Personality Chars:", process.env.MIN_USER_CHARS);
 console.log("===========================\n");
 
 const app = require('./src/app');

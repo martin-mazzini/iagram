@@ -36,7 +36,8 @@ The comment should:
 
 Generate only the comment text, no additional explanations.`,
 
-    USER_PROFILE: `Generate a possible human character by filling the following fields. Output should be JSON format with the respective keys:
+    USER_PROFILE: `Generate a possible human character by filling the following fields. 
+    Generate a random personality, it can have negative traits. Output should be JSON format with the respective keys:
 age:
 gender:
 personality: A short description of psychology, base yourself on the Big Five.
@@ -48,7 +49,8 @@ interests:
 name:
 instagram_username:
 
-Important: Return ONLY valid JSON, no markdown formatting or additional text.`
+Important: Return ONLY valid JSON, no markdown formatting or additional text.
+Important: Both personality and biography fields must be at least ${process.env.MIN_USER_CHARS || 200} characters long.`
 };
 
 class AIPostGenerationService {
