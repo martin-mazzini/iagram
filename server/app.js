@@ -10,6 +10,7 @@ console.log("Model:", process.env.OPENAI_MODEL);
 console.log("Max Tokens (Post):", process.env.MAX_TOKENS_POST);
 console.log("Max Tokens (Comment):", process.env.MAX_TOKENS_COMMENT);
 console.log("Max Tokens (Profile):", process.env.MAX_TOKENS_PROFILE);
+console.log("Min Post Charactersss:", process.env.MIN_POST_CHARS);
 console.log("===========================\n");
 
 const app = require('./src/app');
@@ -42,8 +43,9 @@ async function initializeServices() {
         initializeBackgroundJobs();
         
         // Initialize mock data
-        const mockUsers = await MockDataService.initializeMockData();
-        console.log(`Initialized application with ${mockUsers.length} mock users`);
+        // Temporarily disabled mock user generation
+        // const mockUsers = await MockDataService.initializeMockData();
+        // console.log(`Initialized application with ${mockUsers.length} mock users`);
     } catch (error) {
         console.error('Error initializing services:', error);
         throw error;

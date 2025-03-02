@@ -6,7 +6,6 @@ class DynamoUserRepository extends BaseRepository {
         super();
     }
     
-
     async create(user) {
         const item = {
             PK: `USER#${user.id}`,

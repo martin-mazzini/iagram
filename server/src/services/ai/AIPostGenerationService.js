@@ -53,13 +53,16 @@ class AIPostGenerationService {
     }
 
     _createPromptFromUser(user) {
+        const minChars = parseInt(process.env.MIN_POST_CHARS) || 50;
+        
         return `Create a realistic Instagram post for a user. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Think of REAL instagram posts, for a user with the following characteristics. Note: The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
+Important: The content field should be AT LEAST ${minChars} characters long.
 
 The output should be valid JSON with two keys:
 photo: a description of the photo that would accompany the post.
-content: the Post text content.
+content: the Post text content (minimum ${minChars} characters).
 
 The user in question has the following characteristics:
 ${JSON.stringify(user, null, 2)}`;
