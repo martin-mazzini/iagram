@@ -81,6 +81,10 @@ class OpenAIClient {
       const response = await axios({
         url,
         responseType: 'stream',
+        timeout: 30000, // 30 second timeout
+        headers: {
+          'User-Agent': 'Mozilla/5.0' // Some APIs require a user agent
+        }
       });
 
       // Save to file

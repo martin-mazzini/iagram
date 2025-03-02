@@ -4,6 +4,7 @@ const User = require('../models/User');
 class DynamoUserRepository extends BaseRepository {
     constructor() {
         super();
+        
     }
     
     async create(user) {

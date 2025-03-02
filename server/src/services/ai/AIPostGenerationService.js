@@ -1,5 +1,8 @@
 const OpenAIClient = require('./OpenAIClient');
+const StabilityAIClient = require('./StabilityAIClient');
 const Post = require('../../models/Post');
+const User = require('../../models/User');
+const { v4: uuidv4 } = require('uuid');
 const DynamoPostRepository = require('../../repositories/DynamoPostRepository');
 
 // Prompts as constants
@@ -55,7 +58,9 @@ Important: Both personality and biography fields must be at least ${process.env.
 
 class AIPostGenerationService {
     constructor() {
-        this.openAIClient = new OpenAIClient();
+        this.openaiClient = new OpenAIClient();
+        this.stabilityClient = new StabilityAIClient();
+        this.imageProvider = process.env.IMAGE_PROVIDER
     }
 
     async generatePostForUser(user) {
@@ -64,7 +69,7 @@ class AIPostGenerationService {
         
         try {
             // Generate both text content and photo description
-            const response = await this.openAIClient.generateResponse(prompt, {
+            const response = await this.openaiClient.generateResponse(prompt, {
                 max_tokens: parseInt(process.env.MAX_TOKENS_POST) || 300,
                 temperature: 0.8
             });
@@ -85,7 +90,7 @@ class AIPostGenerationService {
             // Generate image based on the photo description
             const imagePrompt = `Generate a realistic photo of: ${parsedResponse.photo}, as it would be
             taken by someone with the following characteristics: ${JSON.stringify(user, null, 2)}`;
-            const imageUrl = await this.openAIClient.generateImage(imagePrompt);
+            const imageUrl = await this.generateImage(imagePrompt);
 
             const post = new Post({
                 content: parsedResponse.content,
@@ -105,7 +110,7 @@ class AIPostGenerationService {
         const prompt = PROMPTS.COMMENT(user, post);
         
         try {
-            const response = await this.openAIClient.generateResponse(prompt, {
+            const response = await this.openaiClient.generateResponse(prompt, {
                 max_tokens: parseInt(process.env.MAX_TOKENS_COMMENT) || 100,
                 temperature: 0.8
             });
@@ -119,7 +124,7 @@ class AIPostGenerationService {
 
     async generateUserProfile() {
         try {
-            const response = await this.openAIClient.generateResponse(PROMPTS.USER_PROFILE, {
+            const response = await this.openaiClient.generateResponse(PROMPTS.USER_PROFILE, {
                 max_tokens: parseInt(process.env.MAX_TOKENS_PROFILE) || 1000,
                 temperature: 0.8
             });
@@ -166,6 +171,23 @@ class AIPostGenerationService {
         } catch (error) {
             console.error('Error in generateUserProfile:', error);
             throw new Error(`Failed to generate user profile: ${error.message}`);
+        }
+    }
+
+    async generateImage(prompt) {
+        try {
+            // Choose the image generation provider based on environment variable
+            if (this.imageProvider === 'STABILITYAI') {
+                return await this.stabilityClient.generateImage(prompt);
+            } else if (this.imageProvider === 'OPENAI') {
+                return await this.openaiClient.generateImage(prompt);
+            } else {
+                // This should never happen due to validation in constructor
+                throw new Error(`Unsupported image provider: ${this.imageProvider}`);
+            }
+        } catch (error) {
+            console.error('Image Generation Error:', error);
+            throw new Error(`Failed to generate image using ${this.imageProvider}`);
         }
     }
 }
