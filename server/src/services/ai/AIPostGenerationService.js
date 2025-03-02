@@ -2,14 +2,63 @@ const OpenAIClient = require('./OpenAIClient');
 const Post = require('../../models/Post');
 const DynamoPostRepository = require('../../repositories/DynamoPostRepository');
 
+// Prompts as constants
+const PROMPTS = {
+    POST: (user, minChars) => `Create a realistic Instagram post for a user. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Think of REAL instagram posts, for a user with the following characteristics. Note: The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
+
+Important: Return ONLY valid JSON, no markdown formatting or additional text.
+Important: The content field should be AT LEAST ${minChars} characters long.
+
+The output should be valid JSON with two keys:
+photo: a description of the photo that would accompany the post.
+content: the Post text content (minimum ${minChars} characters).
+
+The user in question has the following characteristics:
+${JSON.stringify(user, null, 2)}`,
+
+    COMMENT: (user, post) => `Generate a realistic, engaging Instagram comment for a user responding to their friend's post.
+
+User characteristics:
+Personality: ${user.personality}
+Interests: ${user.interests.join(', ')}
+
+Friend's post content:
+"${post.content}"
+
+The comment should:
+- Be written in a casual, social media style
+- Match the user's personality and tone
+- Be between 1-2 sentences
+- Potentially include 1-2 relevant emojis
+- Feel authentic and personal
+- Show genuine engagement with the post content
+- Avoid generic responses like "Great post!" or "Nice!"
+
+Generate only the comment text, no additional explanations.`,
+
+    USER_PROFILE: `Generate a possible human character by filling the following fields. Output should be JSON format with the respective keys:
+age:
+gender:
+personality: A short description of psychology, base yourself on the Big Five.
+biography: A short biography
+socioeconomic_status:
+political_orientation:
+nationality:
+interests:
+name:
+instagram_username:
+
+Important: Return ONLY valid JSON, no markdown formatting or additional text.`
+};
+
 class AIPostGenerationService {
     constructor() {
         this.openAIClient = new OpenAIClient();
     }
 
-    
     async generatePostForUser(user) {
-        const prompt = this._createPromptFromUser(user);
+        const minChars = parseInt(process.env.MIN_POST_CHARS) || 50;
+        const prompt = PROMPTS.POST(user, minChars);
         
         try {
             // Generate both text content and photo description
@@ -23,7 +72,6 @@ class AIPostGenerationService {
             // Parse the JSON response
             let parsedResponse;
             try {
-                // Clean the response in case it contains markdown or extra text
                 const possibleJson = response.content.replace(/```json\n?|\n?```/g, '').trim();
                 parsedResponse = JSON.parse(possibleJson);
             } catch (parseError) {
@@ -44,7 +92,6 @@ class AIPostGenerationService {
                 username: user.username
             });
 
-            // Save to DynamoDB
             return DynamoPostRepository.create(post);
         } catch (error) {
             console.error('Error generating post:', error);
@@ -52,25 +99,8 @@ class AIPostGenerationService {
         }
     }
 
-    _createPromptFromUser(user) {
-        const minChars = parseInt(process.env.MIN_POST_CHARS) || 50;
-        
-        return `Create a realistic Instagram post for a user. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Think of REAL instagram posts, for a user with the following characteristics. Note: The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
-
-Important: Return ONLY valid JSON, no markdown formatting or additional text.
-Important: The content field should be AT LEAST ${minChars} characters long.
-
-The output should be valid JSON with two keys:
-photo: a description of the photo that would accompany the post.
-content: the Post text content (minimum ${minChars} characters).
-
-The user in question has the following characteristics:
-${JSON.stringify(user, null, 2)}`;
-    }
-
-    
     async generateCommentForPost(user, post) {
-        const prompt = this._createCommentPrompt(user, post);
+        const prompt = PROMPTS.COMMENT(user, post);
         
         try {
             const response = await this.openAIClient.generateResponse(prompt, {
@@ -85,45 +115,9 @@ ${JSON.stringify(user, null, 2)}`;
         }
     }
 
-    _createCommentPrompt(user, post) {
-        return `Generate a realistic, engaging Instagram comment for a user responding to their friend's post.
-
-User characteristics:
-Personality: ${user.personality}
-Interests: ${user.interests.join(', ')}
-
-Friend's post content:
-"${post.content}"
-
-The comment should:
-- Be written in a casual, social media style
-- Match the user's personality and tone
-- Be between 1-2 sentences
-- Potentially include 1-2 relevant emojis
-- Feel authentic and personal
-- Show genuine engagement with the post content
-- Avoid generic responses like "Great post!" or "Nice!"
-
-Generate only the comment text, no additional explanations.`;
-    }
-
     async generateUserProfile() {
-        const prompt = `Generate a possible human character by filling the following fields. Output should be JSON format with the respective keys:
-age:
-gender:
-personality: A short description of psychology, base yourself on the Big Five.
-biography: A short biography
-socioeconomic_status:
-political_orientation:
-nationality:
-interests:
-name:
-instagram_username:
-
-Important: Return ONLY valid JSON, no markdown formatting or additional text.`;
-
         try {
-            const response = await this.openAIClient.generateResponse(prompt, {
+            const response = await this.openAIClient.generateResponse(PROMPTS.USER_PROFILE, {
                 max_tokens: parseInt(process.env.MAX_TOKENS_PROFILE) || 1000,
                 temperature: 0.8
             });
@@ -132,7 +126,6 @@ Important: Return ONLY valid JSON, no markdown formatting or additional text.`;
             
             let userData;
             try {
-                // Clean the response in case it contains markdown or extra text
                 const possibleJson = response.content.replace(/```json\n?|\n?```/g, '').trim();
                 userData = JSON.parse(possibleJson);
             } catch (parseError) {
@@ -145,7 +138,6 @@ Important: Return ONLY valid JSON, no markdown formatting or additional text.`;
                 throw new Error('AI response is not a valid object');
             }
 
-            // Validate required fields
             const requiredFields = ['age', 'gender', 'personality', 'biography', 'nationality', 'interests', 'instagram_username'];
             const missingFields = requiredFields.filter(field => !userData[field]);
             
@@ -154,7 +146,6 @@ Important: Return ONLY valid JSON, no markdown formatting or additional text.`;
                 throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
             }
 
-            // Transform the AI response into our User model format
             const userModelData = {
                 id: require('uuid').v4(),
                 username: userData.instagram_username,
