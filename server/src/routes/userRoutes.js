@@ -6,6 +6,7 @@ const AIPostGenerationService = require('../services/ai/AIPostGenerationService'
 const Comment = require('../models/Comment');
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/User');
+const CommentGenerationService = require('../services/ai/CommentGenerationService');
 
 router.get('/', async (req, res) => {
     try {
@@ -50,46 +51,15 @@ router.get('/:userId/comment/:friendId', async (req, res) => {
         console.log('Requested for userId:', req.params.userId);
         console.log('Target friendId:', req.params.friendId);
         
-        // Get the user
-        const user = await DynamoUserRepository.findById(req.params.userId);
-        if (!user) {
-            console.log('User not found:', req.params.userId);
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        // Get friend's posts
-        const friendPosts = await DynamoPostRepository.findByUserId(req.params.friendId);
-        if (!friendPosts || !friendPosts.length) {
-            return res.status(404).json({ error: 'No posts found from friend' });
-        }
-
-        // Select the most recent post
-        if (!friendPosts.length) {
-            return res.status(404).json({ error: 'No posts found from friends' });
-        }
-        const targetPost = friendPosts[0];
-
-        // Generate comment using AI
-        const commentText = await AIPostGenerationService.generateCommentForPost(user, targetPost);
-
-        // Create and save the comment
-        const comment = new Comment({
-            text: commentText,
-            userId: user.id,
-            username: user.username,
-            postId: targetPost.id
-        });
-
-        await DynamoPostRepository.addComment(targetPost.id, comment);
+        const result = await CommentGenerationService.generateCommentForFriend(
+            req.params.userId, 
+            req.params.friendId
+        );
         
         console.log('\n=== Comment Generation Complete ===');
-        console.log('Generated comment:', comment);
+        console.log('Generated comment:', result.comment);
         
-        res.status(201).json({
-            comment,
-            postId: targetPost.id,
-            friendId: req.params.friendId
-        });
+        res.status(201).json(result);
     } catch (error) {
         console.error('Error in comment generation endpoint:', error);
         res.status(500).json({ error: 'Failed to generate and post comment' });
