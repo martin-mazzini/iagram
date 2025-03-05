@@ -8,6 +8,9 @@ class DynamoPostRepository extends BaseRepository {
     }
 
     async create(post) {
+        // Format the createdAt date for sorting
+        const createdAtISO = post.createdAt.toISOString();
+
         // Store the post with PK = POST#{id}
         const postItem = {
             PK: `POST#${post.id}`,
@@ -23,9 +26,17 @@ class DynamoPostRepository extends BaseRepository {
             createdAt: post.createdAt
         };
 
+        // Create a feed entry with date-based sorting
+        const feedEntry = {
+            PK: 'FEED',
+            SK: `${createdAtISO}#${post.id}`,
+            postId: post.id
+        };
+
         await Promise.all([
             this.put(postItem),
-            this.put(userPostRef)
+            this.put(userPostRef),
+            this.put(feedEntry)
         ]);
 
         return post;
@@ -61,26 +72,58 @@ class DynamoPostRepository extends BaseRepository {
         return posts.sort((a, b) => b.createdAt - a.createdAt);
     }
 
-    //this needs to be optimzied
-    async findAllOrderedByDate() {
+    /**
+     * Get posts ordered by date with date-based pagination
+     * @param {number} pageSize - Number of posts to return
+     * @param {string} startDate - ISO date string to start from (exclusive)
+     * @param {string} startId - Post ID to start from (when multiple posts have same timestamp)
+     * @returns {Object} - Posts and pagination info
+     */
+    async findAllOrderedByDate(pageSize = 20, startDate = null, startId = null) {
+        // Query the feed entries ordered by date (using SK)
         const params = {
             TableName: this.tableName,
-            FilterExpression: 'SK = :sk',
+            KeyConditionExpression: 'PK = :feedType',
             ExpressionAttributeValues: {
-                ':sk': 'DETAILS'
-            }
+                ':feedType': 'FEED'
+            },
+            ScanIndexForward: false, // false for descending order (newest first)
+            Limit: pageSize
         };
 
-        const result = await this.dynamoDB.scan(params).promise();
-        const posts = result.Items.map(item => new Post(item));
-        
-        // Get comments for each post
-        await Promise.all(posts.map(async (post) => {
-            const comments = await this.query(`POST#${post.id}`, 'COMMENT#');
-            post.comments = comments.map(item => new Comment(item));
-        }));
+        // If we have a starting point, add it to the query
+        if (startDate && startId) {
+            params.KeyConditionExpression += ' AND SK < :startKey';
+            params.ExpressionAttributeValues[':startKey'] = `${startDate}#${startId}`;
+        }
 
-        return posts.sort((a, b) => b.createdAt - a.createdAt);
+        const result = await this.dynamoDB.query(params).promise();
+        
+        // Get the full post details for each feed entry
+        const posts = await Promise.all(
+            result.Items.map(item => {
+                const postId = item.SK.split('#')[1]; // Extract post ID from SK
+                return this.findById(postId);
+            })
+        );
+
+        // Get pagination info from the last item
+        let nextStartDate = null;
+        let nextStartId = null;
+        
+        if (result.Items.length > 0 && result.Items.length === pageSize) {
+            const lastItem = result.Items[result.Items.length - 1];
+            const [date, id] = lastItem.SK.split('#');
+            nextStartDate = date;
+            nextStartId = id;
+        }
+
+        return {
+            posts,
+            hasMore: posts.length === pageSize,
+            nextStartDate,
+            nextStartId
+        };
     }
 
     async addComment(postId, comment) {
