@@ -5,47 +5,44 @@ class AICommentGenerationJob {
     static async execute() {
         try {
             console.log('\n=== Executing AI Comment Generation Job ===');
-            console.log('Time:', new Date().toISOString());
+            console.log(`Time: ${new Date().toISOString()}`);
             
-            // Get all users
-            const users = await DynamoUserRepository.findAll();
-            
-            if (!users || users.length === 0) {
-                console.log('No users found. Skipping comment generation.');
+            // Get a random user
+            const user = await DynamoUserRepository.findAll();
+            if (!user || user.length === 0) {
+                console.log('No users found. Skipping job.');
                 return;
             }
-            
-            // Select a random user
-            const randomIndex = Math.floor(Math.random() * users.length);
-            const selectedUser = users[randomIndex];
+            const randomIndex = Math.floor(Math.random() * user.length);
+            const selectedUser = user[randomIndex];
             
             console.log(`Selected random user: ${selectedUser.username} (${selectedUser.id})`);
             
-            // Get user's friends
+            // Get a random friend
             const friends = selectedUser.friends || [];
-            
             if (friends.length === 0) {
-                console.log(`User ${selectedUser.username} has no friends. Skipping comment generation.`);
+                console.log('No friends found for user. Skipping job.');
                 return;
             }
-            
-            // Select a random friend
             const randomFriendIndex = Math.floor(Math.random() * friends.length);
             const selectedFriendId = friends[randomFriendIndex];
             
             console.log(`Selected random friend: ${selectedFriendId}`);
             
-            // Generate a comment on the friend's post
-            const result = await CommentGenerationService.generateCommentForFriend(
-                selectedUser.id,
-                selectedFriendId
-            );
+            // Generate and post a comment
+            const comment = await CommentGenerationService.generateCommentForFriend(selectedUser.id, selectedFriendId);
             
-            console.log(`Successfully generated comment on post: ${result.postId}`);
-            console.log('Comment content:', result.comment.text);
+            // Check if comment generation was successful
+            if (!comment) {
+                console.log(`Skipping comment creation as no valid posts were found.`);
+                return;
+            }
+            
+            console.log(`Successfully generated comment on post: ${comment.postId}`);
+            console.log('Comment content:', comment.comment.text);
             console.log('=== AI Comment Generation Job Completed ===\n');
             
-            return result;
+            return comment;
         } catch (error) {
             console.error('Error in AI Comment Generation Job:', error);
         }
