@@ -4,6 +4,7 @@ const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
 const path = require('path');
+require('dotenv').config();
 
 
 const app = express();

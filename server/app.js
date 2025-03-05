@@ -25,10 +25,29 @@ const PORT = process.env.PORT || 5000;
 
 // Initialize background jobs
 function initializeBackgroundJobs() {
-    // Schedule AI post generation job to run every 15 seconds
+    // Log job configuration
+    console.log("\n=== AI Post Generation Job Configuration ===");
+    console.log("POST_JOB_ENABLED:", process.env.POST_JOB_ENABLED);
+    console.log("POST_JOB_CRON:", process.env.POST_JOB_CRON);
+    console.log("Job will run:", process.env.POST_JOB_ENABLED === 'true' ? 'YES' : 'NO');
+    console.log("==========================================\n");
+    
+    // Check if job is enabled via environment variable
+    const isJobEnabled = process.env.POST_JOB_ENABLED === 'true';
+    
+    if (!isJobEnabled) {
+        console.log('AI Post Generation Job is disabled via POST_JOB_ENABLED environment variable');
+        return;
+    }
+    
+    // Get CRON schedule from environment variable or use default
+    const cronSchedule = process.env.POST_JOB_CRON || '0 */2 * * *';
+    console.log(`Scheduling AI Post Generation Job with cron: ${cronSchedule}`);
+    
+    // Schedule AI post generation job
     BackgroundJobService.scheduleJob(
         'aiPostGeneration',
-        '*/15 * * * * *', // Cron expression for every 15 seconds
+        cronSchedule,
         AIPostGenerationJob.execute
     );
     
