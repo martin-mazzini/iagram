@@ -1,27 +1,81 @@
-const schedule = require('node-schedule');
+const cron = require('node-cron');
+const AIPostGenerationJob = require('./AIPostGenerationJob');
+const AICommentGenerationJob = require('./AICommentGenerationJob');
+const AIUserGenerationJob = require('./AIUserGenerationJob');
 
 class BackgroundJobService {
     constructor() {
-        this.jobs = new Map();
+        this.jobs = {};
     }
 
-    /**
-     * Starts a new job with the given schedule
-     * @param {string} jobName - Unique identifier for the job
-     * @param {string} cronSchedule - Cron schedule expression
-     * @param {Function} taskFunction - The function to execute
-     */
-    scheduleJob(jobName, cronSchedule, taskFunction) {
-        // Cancel existing job if it exists
-        if (this.jobs.has(jobName)) {
-            this.cancelJob(jobName);
-        }
+    initialize() {
+        this.setupPostGenerationJob();
+        this.setupCommentGenerationJob();
+        this.setupUserGenerationJob();
+        console.log('Background jobs initialized');
+    }
 
-        // Schedule new job
-        const job = schedule.scheduleJob(cronSchedule, taskFunction);
-        this.jobs.set(jobName, job);
+    setupPostGenerationJob() {
+        const enabled = process.env.POST_JOB_ENABLED === 'true';
+        const cronSchedule = process.env.POST_JOB_CRON || '0 */2 * * *'; // Default: every 2 hours
         
-        console.log(`Scheduled job: ${jobName} with schedule: ${cronSchedule}`);
+        console.log('\n=== AI Post Generation Job Configuration ===');
+        console.log(`POST_JOB_ENABLED: ${enabled}`);
+        console.log(`POST_JOB_CRON: ${cronSchedule}`);
+        console.log(`Job will run: ${enabled ? 'YES' : 'NO'}`);
+        console.log('==========================================\n');
+        
+        if (enabled) {
+            console.log(`Scheduling AI Post Generation Job with cron: ${cronSchedule}`);
+            this.scheduleJob('aiPostGeneration', cronSchedule, AIPostGenerationJob.execute);
+        } else {
+            console.log('AI Post Generation Job is disabled via POST_JOB_ENABLED environment variable\n');
+        }
+    }
+
+    setupCommentGenerationJob() {
+        const enabled = process.env.COMMENT_JOB_ENABLED === 'true';
+        const cronSchedule = process.env.COMMENT_JOB_CRON || '*/5 * * * *'; // Default: every 5 minutes
+        
+        console.log('\n=== AI Comment Generation Job Configuration ===');
+        console.log(`COMMENT_JOB_ENABLED: ${enabled}`);
+        console.log(`COMMENT_JOB_CRON: ${cronSchedule}`);
+        console.log(`Job will run: ${enabled ? 'YES' : 'NO'}`);
+        console.log('==========================================\n');
+        
+        if (enabled) {
+            console.log(`Scheduling AI Comment Generation Job with cron: ${cronSchedule}`);
+            this.scheduleJob('aiCommentGeneration', cronSchedule, AICommentGenerationJob.execute);
+        } else {
+            console.log('AI Comment Generation Job is disabled via COMMENT_JOB_ENABLED environment variable\n');
+        }
+    }
+
+    setupUserGenerationJob() {
+        const enabled = process.env.USER_JOB_ENABLED === 'true';
+        const cronSchedule = process.env.USER_JOB_CRON || '*/10 * * * * *'; // Default: every 10 seconds
+        
+        console.log('\n=== AI User Generation Job Configuration ===');
+        console.log(`USER_JOB_ENABLED: ${enabled}`);
+        console.log(`USER_JOB_CRON: ${cronSchedule}`);
+        console.log(`Job will run: ${enabled ? 'YES' : 'NO'}`);
+        console.log('==========================================\n');
+        
+        if (enabled) {
+            console.log(`Scheduling AI User Generation Job with cron: ${cronSchedule}`);
+            this.scheduleJob('aiUserGeneration', cronSchedule, AIUserGenerationJob.execute);
+        } else {
+            console.log('AI User Generation Job is disabled via USER_JOB_ENABLED environment variable\n');
+        }
+    }
+
+    scheduleJob(name, cronSchedule, jobFunction) {
+        if (cron.validate(cronSchedule)) {
+            this.jobs[name] = cron.schedule(cronSchedule, jobFunction);
+            console.log(`Scheduled job: ${name} with schedule: ${cronSchedule}`);
+        } else {
+            console.error(`Invalid cron schedule for ${name}: ${cronSchedule}`);
+        }
     }
 
     /**
@@ -29,10 +83,10 @@ class BackgroundJobService {
      * @param {string} jobName - The name of the job to cancel
      */
     cancelJob(jobName) {
-        const job = this.jobs.get(jobName);
+        const job = this.jobs[jobName];
         if (job) {
-            job.cancel();
-            this.jobs.delete(jobName);
+            job.stop();
+            delete this.jobs[jobName];
             console.log(`Cancelled job: ${jobName}`);
         }
     }
@@ -41,11 +95,10 @@ class BackgroundJobService {
      * Cancels all running jobs
      */
     cancelAllJobs() {
-        for (const [jobName, job] of this.jobs) {
-            job.cancel();
-            console.log(`Cancelled job: ${jobName}`);
+        for (const jobName in this.jobs) {
+            this.cancelJob(jobName);
         }
-        this.jobs.clear();
+        this.jobs = {};
     }
 }
 

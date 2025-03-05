@@ -16,68 +16,10 @@ console.log("===========================\n");
 
 const app = require('./src/app');
 const BackgroundJobService = require('./src/services/jobs/BackgroundJobService');
-const AIPostGenerationJob = require('./src/services/jobs/AIPostGenerationJob');
 const MockDataService = require('./src/services/data/MockDataService');
 const { createTable } = require('./src/config/dynamodb');
-const AICommentGenerationJob = require('./src/services/jobs/AICommentGenerationJob');
-
 
 const PORT = process.env.PORT || 5000;
-
-// Initialize background jobs
-function initializeBackgroundJobs() {
-    // Log post job configuration
-    console.log("\n=== AI Post Generation Job Configuration ===");
-    console.log("POST_JOB_ENABLED:", process.env.POST_JOB_ENABLED);
-    console.log("POST_JOB_CRON:", process.env.POST_JOB_CRON);
-    console.log("Job will run:", process.env.POST_JOB_ENABLED === 'true' ? 'YES' : 'NO');
-    console.log("==========================================\n");
-    
-    // Check if post job is enabled
-    const isPostJobEnabled = process.env.POST_JOB_ENABLED === 'true';
-    
-    if (isPostJobEnabled) {
-        // Get CRON schedule from environment variable or use default
-        const postCronSchedule = process.env.POST_JOB_CRON || '0 */2 * * *';
-        console.log(`Scheduling AI Post Generation Job with cron: ${postCronSchedule}`);
-        
-        // Schedule AI post generation job
-        BackgroundJobService.scheduleJob(
-            'aiPostGeneration',
-            postCronSchedule,
-            AIPostGenerationJob.execute
-        );
-    } else {
-        console.log('AI Post Generation Job is disabled via POST_JOB_ENABLED environment variable');
-    }
-    
-    // Log comment job configuration
-    console.log("\n=== AI Comment Generation Job Configuration ===");
-    console.log("COMMENT_JOB_ENABLED:", process.env.COMMENT_JOB_ENABLED);
-    console.log("COMMENT_JOB_CRON:", process.env.COMMENT_JOB_CRON);
-    console.log("Job will run:", process.env.COMMENT_JOB_ENABLED === 'true' ? 'YES' : 'NO');
-    console.log("==========================================\n");
-    
-    // Check if comment job is enabled
-    const isCommentJobEnabled = process.env.COMMENT_JOB_ENABLED === 'true';
-    
-    if (isCommentJobEnabled) {
-        // Get CRON schedule from environment variable or use default
-        const commentCronSchedule = process.env.COMMENT_JOB_CRON || '*/5 * * * * *';
-        console.log(`Scheduling AI Comment Generation Job with cron: ${commentCronSchedule}`);
-        
-        // Schedule AI comment generation job
-        BackgroundJobService.scheduleJob(
-            'aiCommentGeneration',
-            commentCronSchedule,
-            AICommentGenerationJob.execute
-        );
-    } else {
-        console.log('AI Comment Generation Job is disabled via COMMENT_JOB_ENABLED environment variable');
-    }
-    
-    console.log('Background jobs initialized');
-}
 
 // Initialize DynamoDB table and other services
 async function initializeServices() {
@@ -86,7 +28,7 @@ async function initializeServices() {
         await createTable();
         
         // Initialize background jobs
-        initializeBackgroundJobs();
+        BackgroundJobService.initialize();
         
         // Initialize mock data
         // Temporarily disabled mock user generation

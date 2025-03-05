@@ -3,6 +3,7 @@ const router = express.Router();
 const DynamoUserRepository = require('../repositories/DynamoUserRepository');
 const DynamoPostRepository = require('../repositories/DynamoPostRepository');
 const AIPostGenerationService = require('../services/ai/AIPostGenerationService');
+const UserGenerationService = require('../services/ai/UserGenerationService');
 const Comment = require('../models/Comment');
 const { v4: uuidv4 } = require('uuid');
 const User = require('../models/User');
@@ -71,17 +72,9 @@ router.get('/generate', async (req, res) => {
     try {
         console.log('\n=== AI User Generation Request ===');
         
-        // Generate user profile using AI
-        const userProfile = await AIPostGenerationService.generateUserProfile();
-        
-        // Create new User instance
-        const user = new User(userProfile);
-        
-        // Save to DynamoDB
-        const savedUser = await DynamoUserRepository.create(user);
+        const savedUser = await UserGenerationService.generateUser();
         
         console.log('\n=== User Generation Complete ===');
-        console.log('Generated user:', savedUser);
         
         res.status(201).json(savedUser);
     } catch (error) {
