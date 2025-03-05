@@ -136,6 +136,65 @@ class DynamoPostRepository extends BaseRepository {
         await this.put(item);
         return comment;
     }
+
+    /**
+     * Rebuilds the feed index by creating feed entries for all existing posts
+     * This is an idempotent operation that can be run multiple times
+     * @returns {Promise<number>} - Number of posts indexed
+     */
+    async rebuildFeedIndex() {
+        try {
+            console.log('Starting feed index rebuild...');
+            
+            // Step 1: Delete all existing feed entries
+            console.log('Deleting existing feed entries...');
+            const feedEntries = await this.query('FEED');
+            
+            if (feedEntries.length > 0) {
+                console.log(`Found ${feedEntries.length} existing feed entries to delete`);
+                await Promise.all(
+                    feedEntries.map(entry => this.delete('FEED', entry.SK))
+                );
+                console.log('Deleted all existing feed entries');
+            } else {
+                console.log('No existing feed entries found');
+            }
+            
+            // Step 2: Find all posts
+            console.log('Finding all posts...');
+            const params = {
+                TableName: this.tableName,
+                FilterExpression: 'SK = :sk',
+                ExpressionAttributeValues: {
+                    ':sk': 'DETAILS'
+                }
+            };
+            
+            const result = await this.dynamoDB.scan(params).promise();
+            const posts = result.Items.map(item => new Post(item));
+            console.log(`Found ${posts.length} posts to index`);
+            
+            // Step 3: Create feed entries for each post
+            console.log('Creating new feed entries...');
+            const feedEntryPromises = posts.map(post => {
+                const createdAtISO = post.createdAt.toISOString();
+                const feedEntry = {
+                    PK: 'FEED',
+                    SK: `${createdAtISO}#${post.id}`,
+                    postId: post.id
+                };
+                return this.put(feedEntry);
+            });
+            
+            await Promise.all(feedEntryPromises);
+            console.log(`Successfully indexed ${posts.length} posts in the feed`);
+            
+            return posts.length;
+        } catch (error) {
+            console.error('Error rebuilding feed index:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = new DynamoPostRepository(); 

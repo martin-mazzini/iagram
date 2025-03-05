@@ -14,6 +14,21 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Rebuild the feed index (admin operation)
+// This needs to be BEFORE the /:id route to avoid being caught as a post ID
+router.get('/rebuild-feed', async (req, res) => {
+    try {
+        const indexedCount = await DynamoPostRepository.rebuildFeedIndex();
+        res.json({ 
+            success: true, 
+            message: `Successfully rebuilt feed index with ${indexedCount} posts` 
+        });
+    } catch (error) {
+        console.error('Error rebuilding feed index:', error);
+        res.status(500).json({ error: 'Failed to rebuild feed index' });
+    }
+});
+
 // Get posts by user ID
 router.get('/user/:userId', async (req, res) => {
     try {
