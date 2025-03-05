@@ -45,6 +45,11 @@ class OpenAIClient {
 
   async generateImage(prompt) {
     try {
+      // Add clear logging of the image prompt
+      console.log('\n=== Generating image with OpenAI ===');
+      console.log('Image prompt:', prompt);
+      console.log('=======================================\n');
+
       const response = await this.client.images.generate({
         model: "dall-e-3",
         prompt: `Create image given this description: ${prompt}.`,

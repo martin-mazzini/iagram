@@ -8,7 +8,8 @@ const config = {
     secretAccessKey: 'dummy',
     // Add this to ensure proper local DynamoDB connection
     sslEnabled: false,
-    logger: console
+    // Remove the logger to prevent excessive table logging
+    // logger: console
 };
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient(config);

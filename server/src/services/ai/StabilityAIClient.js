@@ -12,7 +12,9 @@ class StabilityAIClient {
 
   async generateImage(prompt) {
     try {
-      console.log('Generating image with Stability AI, prompt:', prompt.substring(0, 100) + '...');
+      console.log('\n=== Generating image with Stability AI ===');
+      console.log('Image prompt:', prompt);
+      console.log('==========================================\n');
       
       // Create a FormData instance for multipart/form-data
       const formData = new FormData();
