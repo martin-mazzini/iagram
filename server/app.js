@@ -25,13 +25,14 @@ const PORT = process.env.PORT || 5000;
 
 // Initialize background jobs
 function initializeBackgroundJobs() {
-    // Schedule AI post generation job to run every 30 minutes
-    // You can adjust the schedule as needed
+    // Schedule AI post generation job to run every 15 seconds
     BackgroundJobService.scheduleJob(
         'aiPostGeneration',
-        '*/5 * * * * *',  // Cron expression: Every 30 minutes
+        '*/15 * * * * *', // Cron expression for every 15 seconds
         AIPostGenerationJob.execute
     );
+    
+    console.log('Background jobs initialized');
 }
 
 // Initialize DynamoDB table and other services
