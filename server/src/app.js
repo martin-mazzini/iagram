@@ -3,6 +3,7 @@ const cors = require('cors');
 const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
 const postRoutes = require('./routes/postRoutes');
+const jobRoutes = require('./routes/jobRoutes');
 const path = require('path');
 require('dotenv').config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/api/ai', aiRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/jobs', jobRoutes);
 
 // this might not be needed at all because
 app.use(express.static(path.join(__dirname, '../../client/public')));
