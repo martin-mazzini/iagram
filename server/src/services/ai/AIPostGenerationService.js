@@ -7,7 +7,7 @@ const DynamoPostRepository = require('../../repositories/DynamoPostRepository');
 
 // Prompts as constants
 const PROMPTS = {
-    POST: (user, minChars) => `Create a realistic Instagram post for a user. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Think of REAL instagram posts, for a user with the following characteristics. Note: The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
+    POST: (user, minChars) => `Create a realistic Instagram post for a specific user given his personality and interests. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Think of REAL instagram posts, for a user with the following characteristics. Note: The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
 Important: The content field should be AT LEAST ${minChars} characters long.
@@ -16,10 +16,11 @@ The output should be valid JSON with two keys:
 photo: a description of the photo that would accompany the post.
 content: the Post text content (minimum ${minChars} characters).
 
-The user in question has the following characteristics:
+The user in question has the following characteristics. This is only for context, so you generate an appropiate post, but take it only as a guideline. No need to perfectly match the interests or personality.
 ${JSON.stringify(user, null, 2)}`,
 
-    COMMENT: (user, post) => `Generate a realistic, engaging Instagram comment for a user responding to their friend's post.
+    COMMENT: (user, post) => `Generate a realistic, authentic Instagram comment for a user responding to their friend's post. Comment doesn't always need to be positive, or 
+    happy, or agreeable. It can be negative, or sarcastic, or even offensive, depending on the user's personality and the post content.
 
 User characteristics:
 Personality: ${user.personality}
@@ -40,7 +41,7 @@ The comment should:
 Generate only the comment text, no additional explanations.`,
 
     USER_PROFILE: `Generate a possible human character by filling the following fields. 
-    Generate a random personality, it can have negative traits. Output should be JSON format with the respective keys:
+    Generate a truly random personality, it can have negative traits (be aggresive, conservative, etc). Don't only generate liberal woman. Output should be JSON format with the respective keys:
 age:
 gender:
 personality: A short description of psychology, base yourself on the Big Five.

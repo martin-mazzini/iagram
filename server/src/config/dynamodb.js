@@ -2,10 +2,10 @@ const AWS = require('aws-sdk');
 
 // Configure AWS to use local DynamoDB
 const config = {
-    region: 'localhost',
-    endpoint: 'http://localhost:8000',
-    accessKeyId: 'dummy',
-    secretAccessKey: 'dummy',
+    region: process.env.AWS_REGION || 'local',
+    endpoint: process.env.DYNAMO_ENDPOINT || 'http://dynamodb-local:8000',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'local',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'local',
     // Add this to ensure proper local DynamoDB connection
     sslEnabled: false,
     // Remove the logger to prevent excessive table logging

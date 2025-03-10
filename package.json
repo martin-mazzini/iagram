@@ -10,7 +10,13 @@
     "client": "cd client && npm start",
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "db:up": "cd server && npm run db:up",
-    "db:down": "cd server && npm run db:down"
+    "db:down": "cd server && npm run db:down",
+    "docker:build": "docker build -t iadialog .",
+    "docker:dev": "docker-compose up",
+    "docker:dev:build": "docker-compose up --build",
+    "docker:stop": "docker-compose down",
+    "docker:clean": "docker-compose down -v",
+    "docker:logs": "docker-compose logs -f"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",

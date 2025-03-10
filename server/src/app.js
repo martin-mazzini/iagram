@@ -27,6 +27,8 @@ if (process.env.NODE_ENV === 'production') {
   app.use(express.static('../../client/build'));
 }
 
+
+
 // Serve static files
 app.use('/images', express.static(path.join(__dirname, '../public/images')));
 

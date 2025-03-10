@@ -7,11 +7,11 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "debug": "nodemon --inspect=9229 app.js",
-    "db:up": "docker-compose up -d",
-    "db:down": "docker-compose down",
-    "db:admin": "set DYNAMO_ENDPOINT=http://localhost:8000 && dynamodb-admin -p 8001",
-    "dev:local": "npm run db:up && concurrently \"npm run db:admin\" \"nodemon app.js\"",
-    "debug:local": "npm run db:up && concurrently \"npm run db:admin\" \"nodemon --inspect=9229 app.js"
+    "db:up": "cd .. && docker-compose up dynamodb-local -d",
+    "db:down": "cd .. && docker-compose down dynamodb-local",
+    "db:admin": "dynamodb-admin -p 8001",
+    "dev:local": "nodemon app.js",
+    "debug:local": "nodemon --inspect=9229 app.js"
   },
   "keywords": [],
   "author": "",
