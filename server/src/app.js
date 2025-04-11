@@ -7,7 +7,6 @@ const jobRoutes = require('./routes/jobRoutes');
 const path = require('path');
 require('dotenv').config();
 
-
 const app = express();
 
 app.use(cors());
@@ -19,17 +18,15 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/jobs', jobRoutes);
 
-// this might not be needed at all because
-app.use(express.static(path.join(__dirname, '../../client/public')));
+// Serve static files from the public directory
+app.use(express.static(path.join(__dirname, '../public')));
 
-// Serve static files from React app in production (in development mode it's not needed because we have a proxy, namely webpack dev server)
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('../../client/build'));
-}
-
-
-
-// Serve static files
+// Serve static files for images
 app.use('/images', express.static(path.join(__dirname, '../public/images')));
+
+// For any other routes, serve the index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 module.exports = app; 
