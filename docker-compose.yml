@@ -6,23 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"  # Server API
       - "5000:5000"  # Server API
-      - "8001:8001"  # DynamoDB admin UI
-    volumes:
-      - ./server:/app/server
-      - ./client:/app/client
-      - /app/server/node_modules
-      - /app/client/node_modules
-    environment:
-      - NODE_ENV=development
-      # DynamoDB configuration
-      - AWS_REGION=local
-      - AWS_ACCESS_KEY_ID=local
-      - AWS_SECRET_ACCESS_KEY=local
-      - DYNAMO_ENDPOINT=http://dynamodb-local:8000
-      # DynamoDB Admin configuration
-      - DYNAMO_ADMIN_PORT=8001
     env_file:
       - ./server/.env
     depends_on:
@@ -36,3 +20,16 @@ services:
     volumes:
       - ./docker/dynamodb:/home/dynamodblocal/data
     working_dir: /home/dynamodblocal 
+
+
+  dynamodb-admin:
+    image: node:18-alpine
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./server/.env
+    command: >
+      sh -c "npm install -g dynamodb-admin && 
+             dynamodb-admin -p 8001"
+    depends_on:
+      - dynamodb-local

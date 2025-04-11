@@ -1,4 +1,12 @@
 terraform {
+  backend "s3" {
+    bucket         = "iadialog-terraform-state"
+    key            = "dev/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-locks"
+    profile        = "terraform" # matches AWS profile
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"

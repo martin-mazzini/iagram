@@ -15,12 +15,21 @@ RUN npm run install-all
 # Copy source code
 COPY . .
 
+# Debug: List files before build
+RUN ls -la /app/client
+
 # Build the client for production
 RUN cd client && npm run build
+
+# Debug: Check if build directory exists
+RUN ls -la /app/client/build
 
 # Move client build to server's public directory
 RUN mkdir -p server/public
 RUN mv client/build/* server/public/
+
+# Debug: Check if files were moved correctly
+RUN ls -la /app/server/public
 
 WORKDIR /app/server
 
