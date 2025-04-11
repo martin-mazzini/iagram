@@ -9,8 +9,13 @@ services:
       - "5000:5000"  # Server API
     env_file:
       - ./server/.env
+    environment:
+      - DYNAMO_ENDPOINT="http://dynamodb-local:8000"
+      - S3_ENDPOINT=http://localstack:4566
+      - ENVIRONMENT=LOCAL-dockercompose
     depends_on:
       - dynamodb-local
+      - localstack
 
   dynamodb-local:
     image: amazon/dynamodb-local:latest
@@ -20,7 +25,6 @@ services:
     volumes:
       - ./docker/dynamodb:/home/dynamodblocal/data
     working_dir: /home/dynamodblocal 
-
 
   dynamodb-admin:
     image: node:18-alpine
@@ -33,3 +37,14 @@ services:
              dynamodb-admin -p 8001"
     depends_on:
       - dynamodb-local
+
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"  # LocalStack Gateway
+    environment:
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    volumes:
+      - ./docker/localstack:/var/lib/localstack

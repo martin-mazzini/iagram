@@ -1,7 +1,6 @@
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
 const FormData = require('form-data');
+const S3ImageRepository = require('../../repositories/S3ImageRepository');
 
 class StabilityAIClient {
   constructor() {
@@ -55,10 +54,8 @@ class StabilityAIClient {
         throw new Error('No image data received from Stability AI API');
       }
       
-      // Save the binary image data
-      const localPath = await this.saveBinaryImage(response.data);
-      
-      return localPath;
+      // Save the binary image data to S3
+      return S3ImageRepository.saveImage(response.data);
     } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code
@@ -92,28 +89,6 @@ class StabilityAIClient {
       }
       
       throw new Error('Failed to generate image with Stability AI: ' + error.message);
-    }
-  }
-
-  async saveBinaryImage(binaryData) {
-    try {
-      // Create images directory if it doesn't exist
-      const imagesDir = path.join(__dirname, '../../../public/images');
-      if (!fs.existsSync(imagesDir)) {
-        fs.mkdirSync(imagesDir, { recursive: true });
-      }
-
-      // Generate unique filename
-      const filename = `${Date.now()}.png`;
-      const filepath = path.join(imagesDir, filename);
-      
-      // Write the binary data directly to file
-      fs.writeFileSync(filepath, Buffer.from(binaryData));
-      
-      return `/images/${filename}`;
-    } catch (error) {
-      console.error('Error saving binary image:', error);
-      throw new Error('Failed to save binary image');
     }
   }
 
