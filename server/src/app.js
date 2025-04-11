@@ -58,6 +58,7 @@ initializeServices()
                 Key: key
             };
 
+            
             S3ImageRepository.s3.getObject(params)
                 .createReadStream()
                 .on('error', (error) => {
