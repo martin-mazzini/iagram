@@ -21,7 +21,7 @@ provider "aws" {
 
   default_tags {
     tags = {
-      Project     = "iadialog"
+      Project = "iadialog"
     }
   }
 }

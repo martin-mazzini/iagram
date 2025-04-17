@@ -33,7 +33,7 @@ RUN ls -la /app/server/public
 
 WORKDIR /app/server
 
-EXPOSE 3000
+EXPOSE 5000
 
 # Use a shell script to determine startup command based on environment
 COPY docker-entrypoint.sh /
