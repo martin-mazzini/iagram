@@ -24,20 +24,22 @@ resource "aws_ecr_repository" "app" {
   name                 = var.ecr_repo_name
   image_tag_mutability = "MUTABLE"
   force_delete         = true
-  lifecycle_policy {
-    policy = jsonencode({
-      rules = [{
-        rulePriority = 1
-        description  = "keep last 10 images"
-        selection    = {
-          tagStatus     = "any"
-          countType     = "imageCountMoreThan"
-          countNumber   = 10
-        }
-        action = { type = "expire" }
-      }]
-    })
-  }
+}
+
+resource "aws_ecr_lifecycle_policy" "app" {
+  repository = aws_ecr_repository.app.name
+  policy = jsonencode({
+    rules = [{
+      rulePriority = 1
+      description  = "keep last 10 images"
+      selection    = {
+        tagStatus     = "any"
+        countType     = "imageCountMoreThan"
+        countNumber   = 10
+      }
+      action = { type = "expire" }
+    }]
+  })
 }
 
 # ---------- IAM ----------
@@ -109,31 +111,40 @@ resource "aws_security_group" "app_sg" {
   description = "Allow SSH + HTTP"
   vpc_id      = data.aws_vpc.default.id
 
-  ingress = [
+  ingress {
+    description      = "HTTP"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    security_groups  = []
+    self             = false
+  }
 
-    {
-      description      = "HTTP"
-      from_port        = 80
-      to_port          = 80
-      protocol         = "tcp"
-      cidr_blocks      = ["0.0.0.0/0"]
-    }
-  ]
-
-  egress = [{
+  egress {
+    description      = "Allow all outbound traffic"
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
-  }]
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    security_groups  = []
+    self             = false
+  }
 }
 
 data "aws_vpc" "default" {
   default = true
 }
 
-data "aws_subnet_ids" "public" {
-  vpc_id = data.aws_vpc.default.id
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
 }
 
 # ---------- Elastic IP ----------
@@ -167,7 +178,7 @@ data "template_file" "user_data" {
 resource "aws_instance" "app" {
   ami           = data.aws_ami.al2023.id
   instance_type = var.instance_type
-  subnet_id     = data.aws_subnet_ids.public.ids[0]
+  subnet_id     = data.aws_subnets.public.ids[0]
 
   vpc_security_group_ids = [aws_security_group.app_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.app.name
@@ -183,6 +194,6 @@ data "aws_ami" "al2023" {
 
   filter {
     name   = "name"
-    values = ["al2023-*-x86_64-kernel-6.1*"]
+    values = ["al2023-ami-*-kernel-6.1-x86_64*"]
   }
 }
