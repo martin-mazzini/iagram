@@ -110,6 +110,7 @@ resource "aws_security_group" "app_sg" {
   vpc_id      = data.aws_vpc.default.id
 
   ingress = [
+
     {
       description      = "HTTP"
       from_port        = 80

@@ -1,36 +1,29 @@
 variable "aws_region" {
   type    = string
-  default = "us-east-1"
-}
-
-variable "allowed_ssh_cidr" {
-  type    = string
-  default = "0.0.0.0/0"
+  description = "AWS region to deploy resources"
 }
 
 variable "instance_type" {
   type    = string
-  default = "t2.micro"
+  description = "EC2 instance type"
 }
 
 variable "app_port" {
   type    = number
-  default = 5000
   description = "Internal port inside container"
 }
 
 variable "ecr_repo_name" {
   type    = string
-  default = "iagram"
+  description = "Name of the ECR repository"
 }
 
 variable "bucket_name" {
   type        = string
   description = "S3 bucket the app will read/write"
-  default = "iagram-images"
 }
 
 variable "dynamodb_table_name" {
   type        = string
-  description = "iagram-data"
+  description = "DynamoDB table the app will read/write"
 }
