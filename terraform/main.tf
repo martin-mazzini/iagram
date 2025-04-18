@@ -31,13 +31,14 @@ data "aws_availability_zones" "available" {
   state = "available"
 } 
 
-
+/**
 module "ec2" {
   source        = "./ec2"
   aws_region    = var.aws_region
-  instance_type = "t2.micro"
-  app_port      = 5000
-  ecr_repo_name = "iagram"
-  bucket_name   = "iagram-images"
-  dynamodb_table_name = "iagram-data"
+  instance_type = var.instance_type
+  app_port      = var.app_port
+  ecr_repo_name = var.ecr_repo_name
+  bucket_name   = var.bucket_name
+  dynamodb_table_name = var.dynamodb_table_name
 }
+**/

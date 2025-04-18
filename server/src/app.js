@@ -38,12 +38,13 @@ initializeServices()
             app.use('/api/ai', aiRoutes);
             app.use('/api/users', userRoutes);
             app.use('/api/posts', postRoutes);
+            app.use('/api/jobs', jobRoutes);
         } else {
             // In production, only expose the GET /posts endpoint
             app.get('/api/posts', postRoutes.get('/'));
         }
 
-        app.use('/api/jobs', jobRoutes);
+   
 
         // Serve static files from the public directory
         app.use(express.static(path.join(__dirname, '../public')));
