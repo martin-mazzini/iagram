@@ -4,6 +4,11 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "ssh_key_name" {
+  description = "Name of the SSH key pair to use for EC2 instance"
+  type        = string
+  default     = "iadialog-key2"
+}
 
 variable "ecr_repo_name" {
   type    = string

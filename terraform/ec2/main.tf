@@ -100,6 +100,18 @@ resource "aws_security_group" "app_sg" {
     self             = false
   }
 
+  ingress {
+    description      = "SSH"
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    cidr_blocks      = ["152.171.172.248/32"]  
+    ipv6_cidr_blocks = []
+    prefix_list_ids  = []
+    security_groups  = []
+    self             = false
+  }
+
   egress {
     description      = "Allow all outbound traffic"
     from_port        = 0
@@ -139,6 +151,24 @@ data "aws_internet_gateway" "default" {
   }
 }
 
+# ---------- SSH Key Pair ----------
+resource "tls_private_key" "ssh" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "generated_key" {
+  key_name   = var.ssh_key_name
+  public_key = tls_private_key.ssh.public_key_openssh
+}
+
+# Save the private key to a file
+resource "local_file" "private_key" {
+  content         = tls_private_key.ssh.private_key_pem
+  filename        = "${path.module}/../${var.ssh_key_name}.pem"
+  file_permission = "0400"
+}
+
 # ---------- EC2 ----------
 data "template_file" "user_data" {
   template = file("${path.module}/user_data.sh")
@@ -159,6 +189,7 @@ resource "aws_instance" "app" {
 
   vpc_security_group_ids = [aws_security_group.app_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.app.name
+  key_name               = aws_key_pair.generated_key.key_name
 
   user_data              = data.template_file.user_data.rendered
 

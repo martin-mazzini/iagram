@@ -27,3 +27,8 @@ variable "dynamodb_table_name" {
   type        = string
   description = "DynamoDB table the app will read/write"
 }
+
+variable "ssh_key_name" {
+  type        = string
+  description = "Name of the SSH key pair to use for EC2 instance"
+}
