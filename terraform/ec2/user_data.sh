@@ -48,6 +48,11 @@ EOF
 # Restart Docker to apply logging configuration
 systemctl restart docker
 
+# Create .env file
+cat > /home/ec2-user/.env << 'EOF'
+${env_file_content}
+EOF
+
 # login to ECR & pull latest image on every boot
 aws ecr get-login-password --region ${region} \
   | docker login --username AWS --password-stdin ${account}.dkr.ecr.${region}.amazonaws.com
@@ -57,7 +62,5 @@ docker pull ${account}.dkr.ecr.${region}.amazonaws.com/${repo}:latest
 
 docker run -d --name myapp -p 80:${port} \
   --restart unless-stopped \
-  --env AWS_REGION=${region} \
-  --env DYNAMODB_TABLE=${dynamodb_table} \
-  --env S3_BUCKET=${bucket} \
+  --env-file /home/ec2-user/.env \
   ${account}.dkr.ecr.${region}.amazonaws.com/${repo}:latest

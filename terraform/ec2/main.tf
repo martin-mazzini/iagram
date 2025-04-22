@@ -170,6 +170,10 @@ resource "local_file" "private_key" {
 }
 
 # ---------- EC2 ----------
+data "local_file" "env_file" {
+  filename = "${path.module}/../../server/.env"
+}
+
 data "template_file" "user_data" {
   template = file("${path.module}/user_data.sh")
   vars = {
@@ -179,6 +183,7 @@ data "template_file" "user_data" {
     port           = var.app_port
     bucket         = var.bucket_name
     dynamodb_table = var.dynamodb_table_name
+    env_file_content = data.local_file.env_file.content
   }
 }
 
