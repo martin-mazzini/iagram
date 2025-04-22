@@ -4,6 +4,7 @@ node_modules
 **/.terraform/*
 *.tfstate
 *.tfstate.*
+*.tfvars
 crash.log
 crash.*.log
 
@@ -11,3 +12,6 @@ crash.*.log
 .terraform/
 terraform.tfstate
 terraform.tfstate.*
+
+
+*.pem
