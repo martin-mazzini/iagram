@@ -57,7 +57,7 @@ resource "aws_iam_role_policy" "inline" {
         Sid      = "DynamoDBAccess"
         Effect   = "Allow"
         Action   = ["dynamodb:*"]
-        Resource = "arn:aws:dynamodb:${var.aws_region}:${local.account_id}:table/${var.dynamodb_table_name}"
+        Resource = "*"
       },
       {
         Sid      = "ECRAccess"
