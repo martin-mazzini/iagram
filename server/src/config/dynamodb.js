@@ -1,16 +1,19 @@
 const AWS = require('aws-sdk');
 
 // Configure AWS to use local DynamoDB
-const config = {
+let config = {
     region: process.env.AWS_REGION || 'local',
-    endpoint: process.env.DYNAMO_ENDPOINT || 'http://dynamodb-local:8000',
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'local',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'local',
-    // Add this to ensure proper local DynamoDB connection
-    sslEnabled: false,
-    // Remove the logger to prevent excessive table logging
-    // logger: console
 };
+
+if (process.env.ENVIRONMENT !== 'PRODUCTION') {
+    config = {
+        ...config,
+        endpoint: process.env.DYNAMO_ENDPOINT || 'http://dynamodb-local:8000',
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'local',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'local',
+        sslEnabled: false,
+    };
+}
 
 const dynamoDB = new AWS.DynamoDB.DocumentClient(config);
 const dynamoDb = new AWS.DynamoDB(config);

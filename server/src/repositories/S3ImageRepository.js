@@ -3,16 +3,25 @@ const { v4: uuidv4 } = require('uuid');
 
 class S3ImageRepository {
     constructor() {
-        // Configure AWS S3 client
-        this.s3 = new AWS.S3({
-            endpoint: process.env.S3_ENDPOINT || 'http://localstack:4566',
+        // Base S3 configuration
+        let config = {
             region: process.env.AWS_REGION || 'us-east-1',
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'test',
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'test',
-            s3ForcePathStyle: true, // Required for localstack
-            sslEnabled: false
-        });
+        };
 
+        // Add local development settings only in non-production
+        if (process.env.ENVIRONMENT !== 'PRODUCTION') {
+            config = {
+                ...config,
+                endpoint: process.env.S3_ENDPOINT || 'http://localstack:4566',
+                accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'test',
+                secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'test',
+                s3ForcePathStyle: true, // Required for localstack
+                sslEnabled: false
+            };
+        }
+
+        // Configure AWS S3 client
+        this.s3 = new AWS.S3(config);
         this.bucketName = process.env.S3_BUCKET_NAME || 'images';
     }
 
