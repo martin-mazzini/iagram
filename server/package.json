@@ -6,12 +6,12 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "debug": "nodemon --inspect=9229 app.js",
+    "debug": "nodemon --inspect=9229 app.js --local",
     "db:up": "cd .. && docker-compose up dynamodb-local -d",
     "db:down": "cd .. && docker-compose down dynamodb-local",
     "db:admin": "dynamodb-admin -p 8001",
-    "dev:local": "nodemon app.js",
-    "debug:local": "nodemon --inspect=9229 app.js"
+    "dev:local": "nodemon app.js --local",
+    "debug:local": "nodemon --inspect=9229 app.js --local"
   },
   "keywords": [],
   "author": "",

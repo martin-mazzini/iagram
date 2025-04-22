@@ -1,7 +1,9 @@
 console.log("Current directory:", process.cwd());
 const path = require('path');
 
-if (process.env.ENVIRONMENT == 'LOCAL-manual') {
+// Check if --local flag is present
+const isLocal = process.argv.includes('--local');
+if (isLocal) {
     const result = require('dotenv').config();
     console.log("Dotenv result:", result);
 }

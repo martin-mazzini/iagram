@@ -2,13 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
-const postRoutes = require('./routes/postRoutes');
+const { router: postRoutes, getAllPosts } = require('./routes/postRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const path = require('path');
 const { createTable } = require('./config/dynamodb');
 const S3ImageRepository = require('./repositories/S3ImageRepository');
 
-if (process.env.ENVIRONMENT == 'LOCAL-manual') {
+// Check if --local flag is present
+const isLocal = process.argv.includes('--local');
+if (isLocal) {
     require('dotenv').config();
 }
 
@@ -44,19 +46,17 @@ initializeServices()
             app.use('/api/jobs', jobRoutes);
         } else {
             // In production, only expose the GET /posts endpoint
-            app.get('/api/posts', postRoutes.get('/'));
+            app.get('/api/posts', getAllPosts);
         }
-
-   
 
         // Serve static files from the public directory
         app.use(express.static(path.join(__dirname, '../public')));
 
         // For any other routes, serve the index.html
-        if (process.env.ENVIRONMENT !== 'LOCAL-manual') {
-        app.get('*', (req, res) => {
-            res.sendFile(path.join(__dirname, '../public/index.html'));
-        });
+        if (!isLocal) {
+            app.get('*', (req, res) => {
+                res.sendFile(path.join(__dirname, '../public/index.html'));
+            });
         }
 
         // S3 proxy for images
@@ -67,7 +67,6 @@ initializeServices()
                 Key: key
             };
 
-            
             S3ImageRepository.s3.getObject(params)
                 .createReadStream()
                 .on('error', (error) => {
@@ -76,7 +75,6 @@ initializeServices()
                 })
                 .pipe(res);
         });
-
     })
     .catch(error => {
         console.error('Failed to initialize services:', error);

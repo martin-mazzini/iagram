@@ -3,8 +3,8 @@ const router = express.Router();
 const DynamoPostRepository = require('../repositories/DynamoPostRepository');
 const Comment = require('../models/Comment');
 
-// Get all posts - This is the only endpoint needed in production
-router.get('/', async (req, res) => {
+// Handler function for getting all posts
+const getAllPosts = async (req, res) => {
     try {
         const posts = await DynamoPostRepository.findAllOrderedByDate();
         res.json(posts);
@@ -12,7 +12,10 @@ router.get('/', async (req, res) => {
         console.error('Error fetching posts:', error);
         res.status(500).json({ error: 'Failed to fetch posts' });
     }
-});
+};
+
+// Get all posts - This is the only endpoint needed in production
+router.get('/', getAllPosts);
 
 // Development-only routes
 if (process.env.ENABLE_DEV_ENDPOINTS === 'true') {
@@ -81,4 +84,7 @@ if (process.env.ENABLE_DEV_ENDPOINTS === 'true') {
     });
 }
 
-module.exports = router; 
+module.exports = {
+    router,
+    getAllPosts
+}; 
