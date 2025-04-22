@@ -1,7 +1,10 @@
 console.log("Current directory:", process.cwd());
 const path = require('path');
 const result = require('dotenv').config();
+
+if (process.env.ENVIRONMENT !== 'LOCAL-manual') {
 console.log("Dotenv result:", result);
+}
 console.log("OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
 
 // Add logging of OpenAI configuration

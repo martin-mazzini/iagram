@@ -7,7 +7,10 @@ const jobRoutes = require('./routes/jobRoutes');
 const path = require('path');
 const { createTable } = require('./config/dynamodb');
 const S3ImageRepository = require('./repositories/S3ImageRepository');
+
+if (process.env.ENVIRONMENT !== 'LOCAL-manual') {
 require('dotenv').config();
+}
 
 const app = express();
 
