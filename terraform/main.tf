@@ -46,5 +46,4 @@ module "ec2" {
   dynamodb_table_name = var.dynamodb_table_name
   ssh_key_name  = var.ssh_key_name
 
-  depends_on = [aws_s3_bucket.images]
 }
