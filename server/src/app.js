@@ -9,7 +9,7 @@ const { createTable } = require('./config/dynamodb');
 const S3ImageRepository = require('./repositories/S3ImageRepository');
 
 if (process.env.ENVIRONMENT !== 'LOCAL-manual') {
-require('dotenv').config();
+    require('dotenv').config();
 }
 
 const app = express();

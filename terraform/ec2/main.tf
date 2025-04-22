@@ -171,7 +171,7 @@ resource "local_file" "private_key" {
 
 # ---------- EC2 ----------
 data "local_file" "env_file" {
-  filename = "${path.module}/../../server/.env"
+  filename = "${path.module}/../../server/.env.production"
 }
 
 data "template_file" "user_data" {
