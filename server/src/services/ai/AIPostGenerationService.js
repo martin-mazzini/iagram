@@ -85,7 +85,7 @@ class AIPostGenerationService {
             
             // Generate both text content and photo description
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: tokenCount,
+                max_tokens: tokenCount + 200,
                 temperature: parseFloat(process.env.POST_GENERATION_TEMPERATURE) || 0.8
             });
 
@@ -132,7 +132,7 @@ class AIPostGenerationService {
             );
             
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: tokenCount,
+                max_tokens: tokenCount + 200,
                 temperature: 0.8
             });
 
@@ -147,12 +147,12 @@ class AIPostGenerationService {
         try {
             // Generate random token count between MIN and MAX
             const tokenCount = this.getRandomTokenCount(
-                process.env.MIN_TOKENS_PROFILE,
-                process.env.MAX_TOKENS_PROFILE
+                process.env.MIN_TOKENS_USER,
+                process.env.MAX_TOKENS_USER
             );
             
             const response = await this.openaiClient.generateResponse(PROMPTS.USER_PROFILE, {
-                max_tokens: tokenCount,
+                max_tokens: tokenCount + 200,
                 temperature: parseFloat(process.env.USER_PROFILE_TEMPERATURE) || 0.8
             });
             
