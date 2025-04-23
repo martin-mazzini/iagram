@@ -14,7 +14,7 @@ Important: The content field should be AT LEAST ${minChars} characters long.
 
 The output should be valid JSON with two keys:
 photo: a description of the photo that would accompany the post.
-content: the Post text content (minimum ${minChars} characters).
+content: the Post text content. Important: the post content should be around ${minChars} characters in total, no more no less. 
 
 The user in question has the following characteristics. This is only for context, so you generate an appropiate post, but take it only as a guideline. No need to perfectly match the interests or personality.
 ${JSON.stringify(user, null, 2)}`,
@@ -37,6 +37,7 @@ The comment should:
 - Feel authentic and personal
 - Show genuine engagement with the post content
 - Avoid generic responses like "Great post!" or "Nice!"
+- Be around ${process.env.MIN_COMMENT_CHARS || 20} characters long
 
 Generate only the comment text, no additional explanations.`,
 
@@ -54,7 +55,7 @@ name:
 instagram_username:
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
-Important: Both personality and biography fields must be at least ${process.env.MIN_USER_CHARS || 200} characters long.`
+Important: Try to use around ${process.env.MIN_USER_CHARS || 200} for the whole user profile.`
 };
 
 class AIPostGenerationService {
@@ -64,15 +65,28 @@ class AIPostGenerationService {
         this.imageProvider = process.env.IMAGE_PROVIDER
     }
 
+    // Helper function to get random number between min and max
+    getRandomTokenCount(min, max) {
+        const minTokens = parseInt(min) || 0;
+        const maxTokens = parseInt(max) || minTokens;
+        return Math.floor(Math.random() * (maxTokens - minTokens + 1)) + minTokens;
+    }
+
     async generatePostForUser(user) {
         const minChars = parseInt(process.env.MIN_POST_CHARS) || 50;
         const prompt = PROMPTS.POST(user, minChars);
         
         try {
+            // Generate random token count between MIN and MAX
+            const tokenCount = this.getRandomTokenCount(
+                process.env.MIN_TOKENS_POST,
+                process.env.MAX_TOKENS_POST
+            );
+            
             // Generate both text content and photo description
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: parseInt(process.env.MAX_TOKENS_POST) || 300,
-                temperature: 0.8
+                max_tokens: tokenCount,
+                temperature: parseFloat(process.env.POST_GENERATION_TEMPERATURE) || 0.8
             });
 
             console.log('Raw AI Response:', response.content);
@@ -111,8 +125,14 @@ class AIPostGenerationService {
         const prompt = PROMPTS.COMMENT(user, post);
         
         try {
+            // Generate random token count between MIN and MAX
+            const tokenCount = this.getRandomTokenCount(
+                process.env.MIN_TOKENS_COMMENT,
+                process.env.MAX_TOKENS_COMMENT
+            );
+            
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: parseInt(process.env.MAX_TOKENS_COMMENT) || 100,
+                max_tokens: tokenCount,
                 temperature: 0.8
             });
 
@@ -125,9 +145,15 @@ class AIPostGenerationService {
 
     async generateUserProfile() {
         try {
+            // Generate random token count between MIN and MAX
+            const tokenCount = this.getRandomTokenCount(
+                process.env.MIN_TOKENS_PROFILE,
+                process.env.MAX_TOKENS_PROFILE
+            );
+            
             const response = await this.openaiClient.generateResponse(PROMPTS.USER_PROFILE, {
-                max_tokens: parseInt(process.env.MAX_TOKENS_PROFILE) || 1000,
-                temperature: 0.8
+                max_tokens: tokenCount,
+                temperature: parseFloat(process.env.USER_PROFILE_TEMPERATURE) || 0.8
             });
             
             console.log('Raw AI Response:', response.content);

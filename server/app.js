@@ -12,11 +12,17 @@ console.log("OPENAI_API_KEY exists:", !!process.env.OPENAI_API_KEY);
 // Add logging of OpenAI configuration
 console.log("\n=== OpenAI Configuration ===");
 console.log("Model:", process.env.OPENAI_MODEL);
+console.log("Min Tokens (Post):", process.env.MIN_TOKENS_POST);
+console.log("Min Tokens (Comment):", process.env.MIN_TOKENS_COMMENT);
+console.log("Min Tokens (Profile):", process.env.MIN_TOKENS_PROFILE);
 console.log("Max Tokens (Post):", process.env.MAX_TOKENS_POST);
 console.log("Max Tokens (Comment):", process.env.MAX_TOKENS_COMMENT);
 console.log("Max Tokens (Profile):", process.env.MAX_TOKENS_PROFILE);
 console.log("Min Post Charactersss:", process.env.MIN_POST_CHARS);
+console.log("Min Comment Characters:", process.env.MIN_COMMENT_CHARS);
 console.log("Min User Bio/Personality Chars:", process.env.MIN_USER_CHARS);
+console.log("Post Generation Temperature:", process.env.POST_GENERATION_TEMPERATURE);
+console.log("User Profile Temperature:", process.env.USER_PROFILE_TEMPERATURE);
 console.log("===========================\n");
 
 const app = require('./src/app');
