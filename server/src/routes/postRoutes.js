@@ -6,8 +6,14 @@ const Comment = require('../models/Comment');
 // Handler function for getting all posts
 const getAllPosts = async (req, res) => {
     try {
-        const posts = await DynamoPostRepository.findAllOrderedByDate();
-        res.json(posts);
+        const { startDate, startId } = req.query;
+        const PAGE_SIZE = 2; // Constant page size
+        const result = await DynamoPostRepository.findAllOrderedByDate(
+            PAGE_SIZE,
+            startDate,
+            startId
+        );
+        res.json(result);
     } catch (error) {
         console.error('Error fetching posts:', error);
         res.status(500).json({ error: 'Failed to fetch posts' });
