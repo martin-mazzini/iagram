@@ -49,16 +49,7 @@ initializeServices()
             app.get('/api/posts', getAllPosts);
         }
 
-        // Serve static files from the public directory
-        app.use(express.static(path.join(__dirname, '../public')));
-
-        // For any other routes, serve the index.html
-        if (!isLocal) {
-            app.get('*', (req, res) => {
-                res.sendFile(path.join(__dirname, '../public/index.html'));
-            });
-        }
-
+        
         // S3 proxy for images
         app.use('/images', (req, res) => {
             const key = req.path.substring(1); // Remove leading slash
@@ -75,6 +66,17 @@ initializeServices()
                 })
                 .pipe(res);
         });
+
+        // Serve static files from the public directory
+        app.use(express.static(path.join(__dirname, '../public')));
+
+        // For any other routes, serve the index.html
+        if (!isLocal) {
+            app.get('*', (req, res) => {
+                res.sendFile(path.join(__dirname, '../public/index.html'));
+            });
+        }
+
     })
     .catch(error => {
         console.error('Failed to initialize services:', error);
