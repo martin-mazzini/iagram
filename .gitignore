@@ -15,4 +15,6 @@ terraform.tfstate.*
 
 
 *.pem
+*.env
 server/.env.production
+./server/.env

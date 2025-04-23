@@ -43,20 +43,14 @@ function App() {
   }, [nextStartDate, nextStartId]);
 
   useEffect(() => {
-    console.log('🔥 useEffect running fetchPosts(true)');
     fetchPosts(true);
   },[]);
 
   const handleScroll = useCallback(() => {
-    console.log('scroll triggered');
     if (
       window.innerHeight + window.scrollY >= document.body.offsetHeight - 50
     ) {
-      console.log('scroll triggered');
-      console.log('has more', hasMore);
-      console.log('is loading more', isLoadingMore);
       if (hasMore && !isLoadingMore) {
-        console.log('fetching more posts');
         fetchPosts(false);
       }
     }
