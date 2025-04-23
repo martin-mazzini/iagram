@@ -9,6 +9,11 @@ output "public_ip" {
   value       = aws_eip.app_ip.public_ip
 }
 
+output "elastic_ip" {
+  description = "Elastic IP address of the EC2 instance"
+  value       = aws_eip.app_ip.public_ip
+}
+
 output "instance_profile_name" {
   description = "Name of the instance profile"
   value       = aws_iam_instance_profile.app.name
