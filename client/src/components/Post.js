@@ -15,7 +15,7 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
   const renderComment = (comment) => (
     <div key={comment.id} className="text-sm flex items-center space-x-2">
       <img 
-        src={`https://i.pravatar.cc/150?u=${comment.userId}`}
+        src={`/images/${comment.userId}.png`}
         alt="Commenter avatar"
         className="h-6 w-6 rounded-full object-cover"
       />
@@ -31,7 +31,7 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
       {/* Post Header */}
       <div className="flex items-center p-3">
         <img 
-          src={`https://i.pravatar.cc/150?u=${userId}`}
+          src={`/images/${userId}.png`}
           alt="User avatar"
           className="h-8 w-8 rounded-full object-cover"
         />

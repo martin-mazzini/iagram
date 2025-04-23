@@ -42,25 +42,26 @@ class OpenAIClient {
     }
   }
 
-  async generateImage(prompt) {
+  async generateImage(prompt, size = "1024x1024", key = null) {
     try {
       // Add clear logging of the image prompt
       console.log('\n=== Generating image with OpenAI ===');
       console.log('Image prompt:', prompt);
+      console.log('Image size:', size);
       console.log('=======================================\n');
 
       const response = await this.client.images.generate({
         model: "dall-e-3",
         prompt: `Create image given this description: ${prompt}.`,
         n: 1,
-        size: "1024x1024",
+        size: size,
         quality: "standard",
         style: "natural"
       });
 
       // Download and save the image to S3
       const imageUrl = response.data[0].url;
-      return S3ImageRepository.saveImageFromUrl(imageUrl);
+      return S3ImageRepository.saveImageFromUrl(imageUrl, key);
     } catch (error) {
       console.error('OpenAI Image Generation Error:', error);
       throw new Error('Failed to generate image');

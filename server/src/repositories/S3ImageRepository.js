@@ -41,42 +41,43 @@ class S3ImageRepository {
         }
     }
 
-    async saveImage(buffer, contentType = 'image/png') {
+    async saveImage(buffer, contentType = 'image/png', key = null) {
         try {
-            const key = `${uuidv4()}.png`;
+            // Use provided key or generate a random one
+            const imageKey = key ? `${key}.png` : `${uuidv4()}.png`;
             
             await this.s3.putObject({
                 Bucket: this.bucketName,
-                Key: key,
+                Key: imageKey,
                 Body: buffer,
                 ContentType: contentType
             }).promise();
 
             // Return the URL to access the image
-            return `/images/${key}`;
+            return `/images/${imageKey}`;
         } catch (error) {
             console.error('Error saving image to S3:', error);
             throw new Error('Failed to save image to S3');
         }
     }
 
-    async saveImageFromUrl(url) {
+    async saveImageFromUrl(url, key = null) {
         try {
             const response = await fetch(url);
             const buffer = await response.arrayBuffer();
-            return this.saveImage(Buffer.from(buffer), response.headers.get('content-type'));
+            return this.saveImage(Buffer.from(buffer), response.headers.get('content-type'), key);
         } catch (error) {
             console.error('Error saving image from URL:', error);
             throw new Error('Failed to save image from URL');
         }
     }
 
-    async saveBase64Image(base64Data) {
+    async saveBase64Image(base64Data, key = null) {
         try {
             // Remove data URL prefix if present
             const base64Image = base64Data.replace(/^data:image\/\w+;base64,/, '');
             const buffer = Buffer.from(base64Image, 'base64');
-            return this.saveImage(buffer);
+            return this.saveImage(buffer, 'image/png', key);
         } catch (error) {
             console.error('Error saving base64 image:', error);
             throw new Error('Failed to save base64 image');
