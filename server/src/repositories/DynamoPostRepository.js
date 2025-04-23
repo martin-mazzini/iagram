@@ -8,6 +8,9 @@ class DynamoPostRepository extends BaseRepository {
     }
 
     async create(post) {
+        // Add random likes between 0 and 400
+        post.likes = Math.floor(Math.random() * 200);
+        
         // Format the createdAt date for sorting
         const createdAtISO = post.createdAt.toISOString();
 

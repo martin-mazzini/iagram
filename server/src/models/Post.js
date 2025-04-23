@@ -8,13 +8,14 @@ class Post {
         imageUrl,
         userId,
         username,
+        likes
     }) {
         this.id = id || uuidv4();
         this.content = content;
         this.imageUrl = imageUrl;
         this.userId = userId;
         this.username = username;
-        this.likes = 0;
+        this.likes = likes || 0;
         this.comments = []; // Array of Comment objects
         this.createdAt = new Date();
         this.updatedAt = new Date();

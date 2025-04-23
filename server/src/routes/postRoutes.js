@@ -7,7 +7,7 @@ const Comment = require('../models/Comment');
 const getAllPosts = async (req, res) => {
     try {
         const { startDate, startId } = req.query;
-        const PAGE_SIZE = 2; // Constant page size
+        const PAGE_SIZE = parseInt(process.env.POSTS_PAGE_SIZE) || 10; // Default to 10 if not set
         const result = await DynamoPostRepository.findAllOrderedByDate(
             PAGE_SIZE,
             startDate,
