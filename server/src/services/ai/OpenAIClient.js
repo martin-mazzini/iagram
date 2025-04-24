@@ -1,7 +1,6 @@
 const OpenAI = require('openai');
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+const S3ImageRepository = require('../../repositories/S3ImageRepository');
 
 class OpenAIClient {
   constructor() {
@@ -43,66 +42,29 @@ class OpenAIClient {
     }
   }
 
-  async generateImage(prompt) {
+  async generateImage(prompt, size = "1024x1024", key = null) {
     try {
       // Add clear logging of the image prompt
       console.log('\n=== Generating image with OpenAI ===');
       console.log('Image prompt:', prompt);
+      console.log('Image size:', size);
       console.log('=======================================\n');
 
       const response = await this.client.images.generate({
         model: "dall-e-3",
         prompt: `Create image given this description: ${prompt}.`,
         n: 1,
-        size: "1024x1024",
+        size: size,
         quality: "standard",
         style: "natural"
       });
 
-      // Download and save the image
+      // Download and save the image to S3
       const imageUrl = response.data[0].url;
-      const localPath = await this.downloadAndSaveImage(imageUrl);
-      
-      return localPath; // Return the local path where the image is saved
+      return S3ImageRepository.saveImageFromUrl(imageUrl, key);
     } catch (error) {
       console.error('OpenAI Image Generation Error:', error);
       throw new Error('Failed to generate image');
-    }
-  }
-
-  async downloadAndSaveImage(url) {
-    try {
-      // Create images directory if it doesn't exist
-      const imagesDir = path.join(__dirname, '../../../public/images');
-      if (!fs.existsSync(imagesDir)) {
-        fs.mkdirSync(imagesDir, { recursive: true });
-      }
-
-      // Generate unique filename
-      const filename = `${Date.now()}.png`;
-      const filepath = path.join(imagesDir, filename);
-
-      // Download image
-      const response = await axios({
-        url,
-        responseType: 'stream',
-        timeout: 30000, // 30 second timeout
-        headers: {
-          'User-Agent': 'Mozilla/5.0' // Some APIs require a user agent
-        }
-      });
-
-      // Save to file
-      const writer = fs.createWriteStream(filepath);
-      response.data.pipe(writer);
-
-      return new Promise((resolve, reject) => {
-        writer.on('finish', () => resolve(`/images/${filename}`));
-        writer.on('error', reject);
-      });
-    } catch (error) {
-      console.error('Error downloading image:', error);
-      throw new Error('Failed to download and save image');
     }
   }
 }

@@ -1,1 +1,20 @@
 node_modules
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+crash.*.log
+
+
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+
+
+*.pem
+*.env
+server/.env.production
+./server/.env

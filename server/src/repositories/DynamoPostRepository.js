@@ -8,6 +8,12 @@ class DynamoPostRepository extends BaseRepository {
     }
 
     async create(post) {
+        // Add random likes between 0 and 400
+        post.likes = Math.floor(Math.random() * 200);
+        
+        // Add random comment limit between 0 and 10
+        post.commentLimit = Math.floor(Math.random() * 11);
+        
         // Format the createdAt date for sorting
         const createdAtISO = post.createdAt.toISOString();
 
@@ -39,6 +45,17 @@ class DynamoPostRepository extends BaseRepository {
             this.put(feedEntry)
         ]);
 
+        return post;
+    }
+
+    async update(post) {
+        const postItem = {
+            PK: `POST#${post.id}`,
+            SK: 'DETAILS',
+            ...post.toJSON()
+        };
+
+        await this.put(postItem);
         return post;
     }
 
@@ -127,13 +144,26 @@ class DynamoPostRepository extends BaseRepository {
     }
 
     async addComment(postId, comment) {
-        const item = {
+        // Get the current post
+        const post = await this.findById(postId);
+        if (!post) {
+            throw new Error(`Post not found: ${postId}`);
+        }
+
+        // Add the comment to the post's comments array
+        post.addComment(comment);
+
+        // Save the updated post
+        await this.update(post);
+
+        // Save the comment
+        const commentItem = {
             PK: `POST#${postId}`,
             SK: `COMMENT#${comment.id}`,
             ...comment.toJSON()
         };
 
-        await this.put(item);
+        await this.put(commentItem);
         return comment;
     }
 

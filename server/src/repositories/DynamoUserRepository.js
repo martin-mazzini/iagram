@@ -52,6 +52,38 @@ class DynamoUserRepository extends BaseRepository {
         const allUsers = await this.findAll();
         return allUsers.filter(user => user.interests.includes(interest));
     }
+    
+
+    // Get random user IDs that could be friends (excluding the specified user)
+    async getRandomPotentialFriendIds(userId) {
+        // Get all users
+        const allUsers = await this.findAll();
+        
+        // Filter out the current user
+        const potentialFriends = allUsers.filter(potentialFriend => 
+            potentialFriend.id !== userId
+        );
+        
+        if (potentialFriends.length === 0) {
+            console.log(`No potential friends found for user ${userId}`);
+            return [];
+        }
+        
+        // Shuffle the potential friends array
+        const shuffled = [...potentialFriends].sort(() => 0.5 - Math.random());
+        
+        // Pick a random number between 5 and 15 (or max available if less than 5)
+        const minFriends = 5;
+        const maxFriends = 15;
+        const availableFriends = Math.max(minFriends, Math.min(maxFriends, shuffled.length));
+        const numToAdd = Math.floor(Math.random() * (availableFriends - minFriends + 1)) + minFriends;
+        
+        // Take the random number of friends
+        const newFriends = shuffled.slice(0, numToAdd);
+        
+        // Return just the IDs
+        return newFriends.map(friend => friend.id);
+    }
 }
 
 module.exports = new DynamoUserRepository(); 

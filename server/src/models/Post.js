@@ -8,13 +8,18 @@ class Post {
         imageUrl,
         userId,
         username,
+        likes,
+        commentLimit,
+        commentedBy
     }) {
         this.id = id || uuidv4();
         this.content = content;
         this.imageUrl = imageUrl;
         this.userId = userId;
         this.username = username;
-        this.likes = 0;
+        this.likes = likes || 0;
+        this.commentLimit = commentLimit || 0;
+        this.commentedBy = commentedBy || [];
         this.comments = []; // Array of Comment objects
         this.createdAt = new Date();
         this.updatedAt = new Date();
@@ -22,12 +27,19 @@ class Post {
 
     addComment(comment) {
         this.comments.push(comment);
+        if (!this.commentedBy.includes(comment.userId)) {
+            this.commentedBy.push(comment.userId);
+        }
         this.updatedAt = new Date();
     }
 
     removeComment(commentId) {
-        this.comments = this.comments.filter(comment => comment.id !== commentId);
-        this.updatedAt = new Date();
+        const comment = this.comments.find(c => c.id === commentId);
+        if (comment) {
+            this.comments = this.comments.filter(c => c.id !== commentId);
+            this.commentedBy = this.commentedBy.filter(id => id !== comment.userId);
+            this.updatedAt = new Date();
+        }
     }
 
     addLike() {
@@ -50,6 +62,8 @@ class Post {
             userId: this.userId,
             username: this.username,
             likes: this.likes,
+            commentLimit: this.commentLimit,
+            commentedBy: this.commentedBy,
             comments: this.comments.map(comment => comment.toJSON()),
             createdAt: this.createdAt,
             updatedAt: this.updatedAt
