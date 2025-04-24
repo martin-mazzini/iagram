@@ -25,6 +25,7 @@ class S3ImageRepository {
         this.bucketName = process.env.S3_BUCKET_NAME || 'images';
     }
 
+    
     async initialize() {
         try {
             // Check if bucket exists
@@ -62,6 +63,7 @@ class S3ImageRepository {
             console.log('Key:', imageKey);
             console.log('Bucket:', this.bucketName);
             console.log('==========================================\n');
+
 
             // Return the URL to access the image
             return `/images/${imageKey}`;

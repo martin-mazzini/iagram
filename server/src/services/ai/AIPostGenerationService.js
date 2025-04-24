@@ -40,7 +40,11 @@ The comment should:
 Generate only the comment text, no additional explanations.`,
 
     USER_PROFILE: (chars) => `Generate a possible human character by filling the following fields. 
-    Generate a truly random personality. Output should be JSON format with the respective keys:
+    Generate a truly random personality. 
+    All traits must be randomly and evenly distributed across possibilities (e.g., gender, political views, income level, education). Avoid idealizing or moral filtering.
+    The personality can include both positive and negative traits, and should reflect realistic psychological diversity.
+    
+    Output should be JSON format with the respective keys:
 age:
 gender:
 personality: A short description of psychology, base yourself on the Big Five.
@@ -53,7 +57,8 @@ name:
 instagram_username:
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
-Important: The total count of charachters in your answer should be ${chars} for the whole user profile.`
+Important: The total count of charachters in your answer should be ${chars} for the whole user profile.
+Important: instagram_username must not include the hobbies of the person in the name.`
 };
 
 class AIPostGenerationService {
