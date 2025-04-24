@@ -54,7 +54,7 @@ class DynamoUserRepository extends BaseRepository {
     }
     
 
-    // Get 5 random user IDs that could be friends (excluding the specified user)
+    // Get random user IDs that could be friends (excluding the specified user)
     async getRandomPotentialFriendIds(userId) {
         // Get all users
         const allUsers = await this.findAll();
@@ -72,8 +72,13 @@ class DynamoUserRepository extends BaseRepository {
         // Shuffle the potential friends array
         const shuffled = [...potentialFriends].sort(() => 0.5 - Math.random());
         
-        // Take up to 5 random users
-        const numToAdd = Math.min(5, shuffled.length);
+        // Pick a random number between 5 and 15 (or max available if less than 5)
+        const minFriends = 5;
+        const maxFriends = 15;
+        const availableFriends = Math.max(minFriends, Math.min(maxFriends, shuffled.length));
+        const numToAdd = Math.floor(Math.random() * (availableFriends - minFriends + 1)) + minFriends;
+        
+        // Take the random number of friends
         const newFriends = shuffled.slice(0, numToAdd);
         
         // Return just the IDs

@@ -8,7 +8,8 @@ class Post {
         imageUrl,
         userId,
         username,
-        likes
+        likes,
+        commentLimit
     }) {
         this.id = id || uuidv4();
         this.content = content;
@@ -16,6 +17,7 @@ class Post {
         this.userId = userId;
         this.username = username;
         this.likes = likes || 0;
+        this.commentLimit = commentLimit || 0;
         this.comments = []; // Array of Comment objects
         this.createdAt = new Date();
         this.updatedAt = new Date();
@@ -51,6 +53,7 @@ class Post {
             userId: this.userId,
             username: this.username,
             likes: this.likes,
+            commentLimit: this.commentLimit,
             comments: this.comments.map(comment => comment.toJSON()),
             createdAt: this.createdAt,
             updatedAt: this.updatedAt

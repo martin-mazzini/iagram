@@ -32,9 +32,9 @@ Friend's post content:
 The comment should:
 - Be written in a casual, social media style.
 - Match the user's personality and tone.
-- Potentially include 1-2 relevant emojis.
-- Feel authentic and personal.
-- Show genuine engagement with the post content.
+- It can be funny, sarcastic, or even negative (BUT NO ALWAYS, do not force it). Instead, base yourself on the user's personality and the post content to determine the appropiate tone.
+- Potentially include 1-2 relevant emojis (depending on the post content and the user's personality).
+- Feel authentic and realistic, as seen on real social media comments.
 - The comment should be ${chars} characters long.
 
 Generate only the comment text, no additional explanations.`,

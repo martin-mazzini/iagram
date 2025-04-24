@@ -52,11 +52,13 @@ class CommentGenerationService {
             return null;
         }
 
-        // Filter posts with less than 4 comments
-        const eligiblePosts = posts.filter(post => !post.comments || post.comments.length < 4);
+        // Filter posts that haven't reached their comment limit
+        const eligiblePosts = posts.filter(post => 
+            !post.comments || post.comments.length < post.commentLimit
+        );
         
         if (eligiblePosts.length === 0) {
-            console.log('No eligible posts found (all have 4 or more comments). Skipping comment generation.');
+            console.log('No eligible posts found (all have reached their comment limit). Skipping comment generation.');
             return null;
         }
 
