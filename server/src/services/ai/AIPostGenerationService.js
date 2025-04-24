@@ -7,19 +7,19 @@ const DynamoPostRepository = require('../../repositories/DynamoPostRepository');
 
 // Prompts as constants
 const PROMPTS = {
-    POST: (user, minChars) => `Create a realistic Instagram post for a specific user given his personality and interests. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Think of REAL instagram posts, for a user with the following characteristics. Note: The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
+    POST: (user, chars) => `Create a realistic Instagram post for a specific user given his personality and interests. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Realism is the main priority. The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
-Important: The content field should be AT LEAST ${minChars} characters long.
+Important: The content field should be ${chars} characters long.
 
 The output should be valid JSON with two keys:
 photo: a description of the photo that would accompany the post.
-content: the Post text content. Important: the post content should be around ${minChars} characters in total, no more no less. 
+content: the Post text content. Important: the post content should be ${chars} characters in total, no more no less. 
 
 The user in question has the following characteristics. This is only for context, so you generate an appropiate post, but take it only as a guideline. No need to perfectly match the interests or personality.
 ${JSON.stringify(user, null, 2)}`,
 
-    COMMENT: (user, post) => `Generate a realistic, authentic Instagram comment for a user responding to their friend's post. Comment doesn't always need to be positive, or 
+    COMMENT: (user, post, chars) => `Generate a realistic, authentic Instagram comment for a user responding to their friend's post. Comment doesn't always need to be positive, or 
     happy, or agreeable. It can be negative, or sarcastic, or even offensive, depending on the user's personality and the post content.
 
 User characteristics:
@@ -30,19 +30,17 @@ Friend's post content:
 "${post.content}"
 
 The comment should:
-- Be written in a casual, social media style
-- Match the user's personality and tone
-- Be between 1-2 sentences
-- Potentially include 1-2 relevant emojis
-- Feel authentic and personal
-- Show genuine engagement with the post content
-- Avoid generic responses like "Great post!" or "Nice!"
-- Be around ${process.env.MIN_COMMENT_CHARS || 20} characters long
+- Be written in a casual, social media style.
+- Match the user's personality and tone.
+- Potentially include 1-2 relevant emojis.
+- Feel authentic and personal.
+- Show genuine engagement with the post content.
+- The comment should be ${chars} characters long.
 
 Generate only the comment text, no additional explanations.`,
 
-    USER_PROFILE: `Generate a possible human character by filling the following fields. 
-    Generate a truly random personality, it can have negative traits (be aggresive, conservative, etc). Don't only generate liberal woman. Output should be JSON format with the respective keys:
+    USER_PROFILE: (chars) => `Generate a possible human character by filling the following fields. 
+    Generate a truly random personality. Output should be JSON format with the respective keys:
 age:
 gender:
 personality: A short description of psychology, base yourself on the Big Five.
@@ -55,7 +53,7 @@ name:
 instagram_username:
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
-Important: Try to use around ${process.env.MIN_USER_CHARS || 200} for the whole user profile.`
+Important: The total count of charachters in your answer should be ${chars} for the whole user profile.`
 };
 
 class AIPostGenerationService {
@@ -73,16 +71,20 @@ class AIPostGenerationService {
     }
 
     async generatePostForUser(user) {
-        const minChars = parseInt(process.env.MIN_POST_CHARS) || 50;
-        const prompt = PROMPTS.POST(user, minChars);
-        
         try {
-            // Generate random token count between MIN and MAX
+
             const tokenCount = this.getRandomTokenCount(
                 process.env.MIN_TOKENS_POST,
                 process.env.MAX_TOKENS_POST
             );
-            
+
+            const prompt = PROMPTS.POST(user, tokenCount);
+
+                          
+            console.log('\n=== Post Generation Prompt ===');
+            console.log(prompt);
+            console.log('=======================================\n');
+          
             // Generate both text content and photo description
             const response = await this.openaiClient.generateResponse(prompt, {
                 max_tokens: tokenCount + 200,
@@ -122,14 +124,19 @@ class AIPostGenerationService {
     }
 
     async generateCommentForPost(user, post) {
-        const prompt = PROMPTS.COMMENT(user, post);
-        
         try {
             // Generate random token count between MIN and MAX
             const tokenCount = this.getRandomTokenCount(
                 process.env.MIN_TOKENS_COMMENT,
                 process.env.MAX_TOKENS_COMMENT
             );
+
+            const prompt = PROMPTS.COMMENT(user, post, tokenCount);
+    
+                  
+            console.log('\n=== Comment Generation Prompt ===');
+            console.log(prompt);
+            console.log('=======================================\n');
             
             const response = await this.openaiClient.generateResponse(prompt, {
                 max_tokens: tokenCount + 200,
@@ -151,7 +158,14 @@ class AIPostGenerationService {
                 process.env.MAX_TOKENS_USER
             );
             
-            const response = await this.openaiClient.generateResponse(PROMPTS.USER_PROFILE, {
+
+            const prompt = PROMPTS.USER_PROFILE(tokenCount);
+            
+            console.log('\n=== User Profile Generation Prompt ===');
+            console.log(prompt);
+            console.log('=======================================\n');
+            
+            const response = await this.openaiClient.generateResponse(prompt, {
                 max_tokens: tokenCount + 200,
                 temperature: parseFloat(process.env.USER_PROFILE_TEMPERATURE) || 0.8
             });

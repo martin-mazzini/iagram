@@ -14,15 +14,13 @@ class UserGenerationService {
         
         // Generate profile picture
         const openaiClient = new OpenAIClient();
-        const profilePicPrompt = `Generate a profile picture for a social media user with the following characteristics:
+        const profilePicPrompt = `Generate a profile photo for an Instagram user with the following characteristics:
 - Age: ${userProfile.age}
 - Gender: ${userProfile.gender}
 - Nationality: ${userProfile.nationality}
 - Socioeconomic Status: ${userProfile.socioeconomicStatus}
-- Interests: ${userProfile.interests.join(', ')}
 
-The image should be suitable for a small profile picture, reflect the user charachteristic, and MOST IMPORTANTLY,
- be a realistic profile pic that a person would use on Instagram. It doesn't neccesarily have to reflect the person hobbies or interests, but it can if it would be realistic for the picture.`;
+. Do not include any UI, frames, logos, text, or other elements. THE IMAGE IS JUST A PHOTO taken with a cellphone.`;
         await openaiClient.generateImage(profilePicPrompt, "1024x1024", user.id);
         
         // Get random friend IDs
