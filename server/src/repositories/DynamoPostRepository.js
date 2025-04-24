@@ -48,6 +48,17 @@ class DynamoPostRepository extends BaseRepository {
         return post;
     }
 
+    async update(post) {
+        const postItem = {
+            PK: `POST#${post.id}`,
+            SK: 'DETAILS',
+            ...post.toJSON()
+        };
+
+        await this.put(postItem);
+        return post;
+    }
+
     //finds a post by id including comments
     //couldn't comments just be a json field in the post?
     async findById(id) {
@@ -133,13 +144,26 @@ class DynamoPostRepository extends BaseRepository {
     }
 
     async addComment(postId, comment) {
-        const item = {
+        // Get the current post
+        const post = await this.findById(postId);
+        if (!post) {
+            throw new Error(`Post not found: ${postId}`);
+        }
+
+        // Add the comment to the post's comments array
+        post.addComment(comment);
+
+        // Save the updated post
+        await this.update(post);
+
+        // Save the comment
+        const commentItem = {
             PK: `POST#${postId}`,
             SK: `COMMENT#${comment.id}`,
             ...comment.toJSON()
         };
 
-        await this.put(item);
+        await this.put(commentItem);
         return comment;
     }
 

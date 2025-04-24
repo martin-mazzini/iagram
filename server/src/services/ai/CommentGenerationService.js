@@ -65,7 +65,7 @@ class CommentGenerationService {
         // Pick a random post from eligible ones
         const randomPost = eligiblePosts[Math.floor(Math.random() * eligiblePosts.length)];
 
-        // Get a random friend of the post's author
+        // Get potential friends of the post's author
         const potentialFriends = await DynamoUserRepository.getRandomPotentialFriendIds(randomPost.userId);
         
         if (!potentialFriends || potentialFriends.length === 0) {
@@ -73,8 +73,18 @@ class CommentGenerationService {
             return null;
         }
 
-        // Pick a random friend
-        const randomFriendId = potentialFriends[Math.floor(Math.random() * potentialFriends.length)];
+        // Filter out friends who have already commented on this post
+        const eligibleFriends = potentialFriends.filter(friendId => 
+            !randomPost.commentedBy || !randomPost.commentedBy.includes(friendId)
+        );
+
+        if (eligibleFriends.length === 0) {
+            console.log(`No eligible friends found (all have already commented on post ${randomPost.id}). Skipping comment generation.`);
+            return null;
+        }
+
+        // Pick a random friend from eligible ones
+        const randomFriendId = eligibleFriends[Math.floor(Math.random() * eligibleFriends.length)];
         
         // Get the friend's user data
         const friend = await DynamoUserRepository.findById(randomFriendId);
