@@ -4,15 +4,23 @@ const S3ImageRepository = require('../../repositories/S3ImageRepository');
 
 class StabilityAIClient {
   constructor() {
+    https://api.stability.ai/v2beta/stable-image/generate/sd3
     this.apiKey = process.env.STABILITY_API_KEY;
-    // We need to use the v2beta base URL for Stable Image Ultra
     this.apiUrl = "https://api.stability.ai";
+    // Get the model URL from env (e.g., 'sd3' or 'ultra')
+    this.modelUrl = process.env.STABILITY_MODEL_URL
+    // Get the specific model for SD3 (only used if modelUrl is 'sd3')
+    this.model = process.env.STABILITY_MODEL
   }
 
-  async generateImage(prompt) {
+  async generateImage(prompt, key = null) {
     try {
       console.log('\n=== Generating image with Stability AI ===');
       console.log('Image prompt:', prompt);
+      console.log('Model URL:', this.modelUrl);
+      if (this.modelUrl === 'sd3') {
+        console.log('SD3 Model:', this.model);
+      }
       console.log('==========================================\n');
       
       // Create a FormData instance for multipart/form-data
@@ -28,44 +36,42 @@ class StabilityAIClient {
       formData.append('seed', '0');
       formData.append('cfg_scale', '7');
 
+      // Add model parameter only for SD3
+      if (this.modelUrl === 'sd3') {
+        formData.append('model', this.model);
+      }
+
       console.log('Sending request to Stability AI...');
       
-      // Make request to Stability AI API using the correct v2beta endpoint
-      // Set responseType to 'arraybuffer' to get the raw image data
+      // Make request to Stability AI API using the configured endpoint
       const response = await axios.post(
-        `${this.apiUrl}/v2beta/stable-image/generate/ultra`,
+        `${this.apiUrl}/v2beta/stable-image/generate/${this.modelUrl}`,
         formData,
         {
           headers: {
             ...formData.getHeaders(),
             'Authorization': `Bearer ${this.apiKey}`,
-            // Request the image directly instead of JSON
             'Accept': 'image/*'
           },
-          responseType: 'arraybuffer' // Important: get the raw binary data
+          responseType: 'arraybuffer'
         }
       );
 
       console.log('Stability AI Response Status:', response.status);
       console.log('Stability AI Response Headers:', response.headers);
       
-      // The entire response is the image data
       if (!response.data) {
         throw new Error('No image data received from Stability AI API');
       }
       
-      // Save the binary image data to S3
-      return S3ImageRepository.saveImage(response.data);
+      return S3ImageRepository.saveImage(response.data, 'image/png', key);
     } catch (error) {
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         console.error('Stability AI Error Response:', {
           status: error.response.status,
           headers: error.response.headers
         });
         
-        // If we have binary data in the error response, it might be an error message in JSON
         if (error.response.data) {
           try {
             const errorText = Buffer.from(error.response.data).toString('utf8');
@@ -81,10 +87,8 @@ class StabilityAIClient {
           }
         }
       } else if (error.request) {
-        // The request was made but no response was received
         console.error('Stability AI No Response:', error.request);
       } else {
-        // Something happened in setting up the request that triggered an Error
         console.error('Stability AI Request Setup Error:', error.message);
       }
       

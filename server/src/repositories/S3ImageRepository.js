@@ -46,12 +46,22 @@ class S3ImageRepository {
             // Use provided key or generate a random one
             const imageKey = key ? `${key}.png` : `${uuidv4()}.png`;
             
+            console.log('\n=== Saving to S3 ===');
+            console.log('Key:', imageKey);
+            console.log('Bucket:', this.bucketName);
+            console.log('==========================================\n');
+            
             await this.s3.putObject({
                 Bucket: this.bucketName,
                 Key: imageKey,
                 Body: buffer,
                 ContentType: contentType
             }).promise();
+
+            console.log('\n=== Successfully saved to S3 ===');
+            console.log('Key:', imageKey);
+            console.log('Bucket:', this.bucketName);
+            console.log('==========================================\n');
 
             // Return the URL to access the image
             return `/images/${imageKey}`;
