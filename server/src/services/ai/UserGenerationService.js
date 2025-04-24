@@ -21,7 +21,7 @@ class UserGenerationService {
         // Create new User instance
         const user = new User(userProfile);
 
-
+        
         // Skip profile picture generation if disabled via environment variable
         if (process.env.PROFILE_PIC_GENERATION_ENABLED == 'true') {
             try {
