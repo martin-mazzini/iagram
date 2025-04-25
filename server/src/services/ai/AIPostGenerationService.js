@@ -19,21 +19,24 @@ content: the Post text content. Important: the post content should be ${chars} c
 The user in question has the following characteristics. This is only for context, so you generate an appropiate post, but take it only as a guideline. No need to perfectly match the interests or personality.
 ${JSON.stringify(user, null, 2)}`,
 
-    COMMENT: (user, post, chars) => `Generate a realistic, authentic Instagram comment for a user responding to their friend's post. Comment doesn't always need to be positive, or 
-    happy, or agreeable. It can be negative, or sarcastic, or even offensive, depending on the user's personality and the post content.
+    COMMENT: (user, post, chars) => `Generate a realistic, authentic Instagram comment from a user responding to their friend's post.
 
 User characteristics:
 Personality: ${user.personality}
 Interests: ${user.interests.join(', ')}
+Biography: ${user.biography}
+Age: ${user.age}
+Gender: ${user.gender}
+Socioeconomic status: ${user.socioeconomicStatus}
+Political orientation: ${user.politicalOrientation}
 
 Friend's post content:
 "${post.content}"
 
 The comment should:
-- Be written in a casual, social media style.
-- Match the user's personality and tone.
-- It can be funny, sarcastic, or even negative (BUT NO ALWAYS, do not force it). Instead, base yourself on the user's personality and the post content to determine the appropiate tone.
-- Potentially include 1-2 relevant emojis (depending on the post content and the user's personality).
+- Fully impersonate this user. Don't simulate a generic commenter. Instead, deeply internalize the user's personality, age, gender, political orientation, biography, and interests to decide *how they would naturally react* — whether with praise, humor, memes, questions, teasing, flirtation, criticism, or indifference.
+- The comment can be any category: positive/praise, humor/memes/, question/curiosity, controversy/criticism, personal/teasing/in-group lingo. 
+- Use at most 1–2 emojis *only if* they fit naturally with the user’s style and the post’s context, don´t overdo it.
 - Feel authentic and realistic, as seen on real social media comments.
 - The comment should be ${chars} characters long.
 
@@ -75,13 +78,54 @@ class AIPostGenerationService {
         return Math.floor(Math.random() * (maxTokens - minTokens + 1)) + minTokens;
     }
 
+    getPostTokenLimits(distribution) {
+        // Validate distribution array
+        if (!Array.isArray(distribution) || distribution.length === 0) {
+            throw new Error('Distribution must be a non-empty array of [percentage, tokenCount] pairs');
+        }
+
+        // Validate total percentage is 100%
+        const totalPercentage = distribution.reduce((sum, [percentage]) => sum + percentage, 0);
+        if (Math.abs(totalPercentage - 100) > 0.01) {
+            throw new Error('Distribution percentages must sum to 100%');
+        }
+
+        // Generate random number between 0 and 100
+        const random = Math.random() * 100;
+        
+        // Find the bucket that contains our random number
+        let cumulativePercentage = 0;
+        for (let i = 0; i < distribution.length; i++) {
+            const [percentage, tokenCount] = distribution[i];
+            cumulativePercentage += percentage;
+            
+            if (random <= cumulativePercentage) {
+                // Calculate min and max for this bucket
+                const min = i === 0 ? 0 : distribution[i-1][1];
+                const max = tokenCount;
+                return { min, max };
+            }
+        }
+        
+        // Fallback to last bucket if something goes wrong
+        const lastBucket = distribution[distribution.length - 1];
+        return { min: 0, max: lastBucket[1] };
+    }
+
     async generatePostForUser(user) {
         try {
+            // Define the token distribution buckets <frequency, chars>
+            const distribution = [
+                [10, 10],   
+                [20, 50],  
+                [40, 100],  
+                [15, 250],
+                [10, 500], 
+                [5, 800] 
+            ];
 
-            const tokenCount = this.getRandomTokenCount(
-                process.env.MIN_TOKENS_POST,
-                process.env.MAX_TOKENS_POST
-            );
+            const { min, max } = this.getPostTokenLimits(distribution);
+            const tokenCount = this.getRandomTokenCount(min, max);
 
             const prompt = PROMPTS.POST(user, tokenCount);
 
@@ -109,10 +153,15 @@ class AIPostGenerationService {
                 throw new Error('Failed to parse AI response as JSON');
             }
             
+            let imageUrl;
+            if (process.env.POST_PIC_GENERATION_ENABLED == 'true') {
             // Generate image based on the photo description
             const imagePrompt = `Generate a realistic photo of: ${parsedResponse.photo}, as it would be
             taken by someone with the following characteristics: ${JSON.stringify(user, null, 2)}`;
-            const imageUrl = await this.generateImage(imagePrompt);
+            imageUrl = await this.generateImage(imagePrompt);
+            }else{
+                console.log('Post picture generation is disabled. Skipping...');
+            }
 
             const post = new Post({
                 content: parsedResponse.content,
@@ -130,11 +179,18 @@ class AIPostGenerationService {
 
     async generateCommentForPost(user, post) {
         try {
-            // Generate random token count between MIN and MAX
-            const tokenCount = this.getRandomTokenCount(
-                process.env.MIN_TOKENS_COMMENT,
-                process.env.MAX_TOKENS_COMMENT
-            );
+            const distribution = [
+                [15,  10],   
+                [20,  50],   
+                [5,  70],
+                [40, 100],   
+                [10, 200],  
+                [5,  400],  
+                [5,  500]  
+            ];
+
+            const { min, max } = this.getPostTokenLimits(distribution);
+            const tokenCount = this.getRandomTokenCount(min, max);
 
             const prompt = PROMPTS.COMMENT(user, post, tokenCount);
     
