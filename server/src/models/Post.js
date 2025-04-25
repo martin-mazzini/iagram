@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 class Post {
     constructor({
         id,
+        photo,
         content,
         imageUrl,
         userId,
@@ -13,6 +14,7 @@ class Post {
         commentedBy
     }) {
         this.id = id || uuidv4();
+        this.photo = photo;
         this.content = content;
         this.imageUrl = imageUrl;
         this.userId = userId;
@@ -57,6 +59,7 @@ class Post {
     toJSON() {
         return {
             id: this.id,
+            photo: this.photo,
             content: this.content,
             imageUrl: this.imageUrl,
             userId: this.userId,

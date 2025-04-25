@@ -12,20 +12,17 @@ const PROMPTS = {
     The post should feel like something posted by a *real person*, not a bot or a brand.
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
-Important: The content field should be ${chars} characters long.
 
 The output should be valid JSON with two keys:
-photo: a description of the photo that would accompany the post.
-content: the Post text content. Important: the post content should be ${chars} characters in total, no more no less. 
+photo: a description of the photo that will accompany the post text content. The description should include all the neccesary details needed for an IA to correctly and accurately generate the Post image without any additional context.
+content: the Post text content. Important: the post text content should be ${chars} characters in total, no more no less. 
 
 Important notes:
 - Avoid overfitting to hobbies. Interests are background context — they inform the user's world, but don’t constrain what they post about. 
-- Not all posts should be positive, deep, or aesthetic. Real people post low-effort selfies, messy food pics, awkward group photos, screenshots, venting, or emotional outbursts.
-- Posts can -and sometimes should- include other — friends, a partner, family, pets. This could be a group selfie, a night out, a casual hang with their partner.
-- Use emojis, hashtags, or broken grammar *only when appropriate* for the user's tone and post context — don’t force them.
+- Not all posts should be positive, deep, or aesthetic. Real people post low-effort selfies, messy food pics, awkward group photos, venting, etc.
+- Posts can include other — friends, a partner, family (group selfie, a night out, a casual hang with their partner).
+- Don't force use of emojis, hashtags, or broken grammar,  *only when appropriate* for the user's tone and post context.
 - Again: You don't ALWAYS have to include emojis or hashtags, use with moderation and depending on context.
-- The tone and vibe should be consistent with how someone with this user's traits (age, gender, personality, interests, and background) would express themselves.
-- The content must be exactly ${chars} characters long.
 
 User profile:
 ${JSON.stringify(user, null, 2)}`,
@@ -33,16 +30,18 @@ ${JSON.stringify(user, null, 2)}`,
     COMMENT: (user, post, chars) => `Generate a realistic, authentic Instagram comment from a user responding to their friend's post.
 
 User characteristics:
+Name: ${user.name}
+Age: ${user.age}
+Gender: ${user.gender}
 Personality: ${user.personality}
 Interests: ${user.interests.join(', ')}
 Biography: ${user.biography}
-Age: ${user.age}
-Gender: ${user.gender}
 Socioeconomic status: ${user.socioeconomicStatus}
 Political orientation: ${user.politicalOrientation}
 
 Friend's post content:
-"${post.content}"
+Post text content: "${post.content}"
+Post image description: "${post.photo}"
 
 The comment should:
 - Fully impersonate this user. Don't simulate a generic commenter. Instead, deeply internalize the user's personality, age, gender, political orientation, biography, and interests to decide *how they would naturally react* — whether with praise, humor, memes, questions, teasing, flirtation, criticism, or indifference.
@@ -59,6 +58,7 @@ Generate only the comment text, no additional explanations.`,
     The personality can include both positive and negative traits, and should reflect realistic psychological diversity.
     
     Output should be JSON format with the respective keys:
+name: The real name.
 age:
 gender:
 personality: A short description of psychology, base yourself on the Big Five.
@@ -68,7 +68,7 @@ political_orientation:
 nationality:
 interests:
 name:
-instagram_username:
+instagram_username: The instagram username of the user.
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
 Important: The total count of charachters in your answer should be ${chars} for the whole user profile.
@@ -147,17 +147,20 @@ class AIPostGenerationService {
           
             // Generate both text content and photo description
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: tokenCount + 200,
+                max_tokens: 400,
                 temperature: parseFloat(process.env.POST_GENERATION_TEMPERATURE) || 0.8
             });
 
             console.log('Raw AI Response:', response.content);
-
+            
             // Parse the JSON response
             let parsedResponse;
             try {
                 const possibleJson = response.content.replace(/```json\n?|\n?```/g, '').trim();
                 parsedResponse = JSON.parse(possibleJson);
+                console.log('User is:', user.biography);
+                console.log('Post content is:', parsedResponse.content);
+                console.log('Post image prompt is:', parsedResponse.photo);
             } catch (parseError) {
                 console.error('Parse Error:', parseError);
                 console.error('Invalid JSON received from ChatGPT:', response.content);
@@ -176,6 +179,7 @@ class AIPostGenerationService {
 
             const post = new Post({
                 content: parsedResponse.content,
+                photo: parsedResponse.photo,
                 imageUrl: imageUrl,
                 userId: user.id,
                 username: user.username
@@ -211,9 +215,14 @@ class AIPostGenerationService {
             console.log('=======================================\n');
             
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: tokenCount + 200,
+                max_tokens: 300,
                 temperature: 0.8
             });
+
+            console.log('\n=== Generated Comment ===');
+            console.log(response.content);
+            console.log('=======================================\n');
+            
 
             return response.content;
         } catch (error) {
@@ -238,7 +247,7 @@ class AIPostGenerationService {
             console.log('=======================================\n');
             
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: tokenCount + 200,
+                max_tokens: 500,
                 temperature: parseFloat(process.env.USER_PROFILE_TEMPERATURE) || 0.8
             });
             
@@ -258,7 +267,7 @@ class AIPostGenerationService {
                 throw new Error('AI response is not a valid object');
             }
 
-            const requiredFields = ['age', 'gender', 'personality', 'biography', 'nationality', 'interests', 'instagram_username'];
+            const requiredFields = ['age', 'gender', 'personality', 'biography', 'nationality', 'interests', 'instagram_username', 'name'];
             const missingFields = requiredFields.filter(field => !userData[field]);
             
             if (missingFields.length > 0) {
@@ -268,6 +277,7 @@ class AIPostGenerationService {
 
             const userModelData = {
                 id: require('uuid').v4(),
+                name: userData.name,
                 username: userData.instagram_username,
                 age: userData.age,
                 gender: userData.gender,
@@ -280,6 +290,7 @@ class AIPostGenerationService {
                 friends: []
             };
 
+            console.log('User model data is:', JSON.stringify(userModelData, null, 2));
             return userModelData;
         } catch (error) {
             console.error('Error in generateUserProfile:', error);

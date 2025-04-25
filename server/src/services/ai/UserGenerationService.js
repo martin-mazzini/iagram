@@ -7,6 +7,8 @@ const S3ImageRepository = require('../../repositories/S3ImageRepository');
 
 class UserGenerationService {
 
+
+    
     constructor() {
         this.openaiClient = new OpenAIClient();
         this.stabilityClient = new StabilityAIClient();
@@ -19,8 +21,9 @@ class UserGenerationService {
         const userProfile = await AIPostGenerationService.generateUserProfile();
         
         // Create new User instance
+        console.log('User profile is:', JSON.stringify(userProfile, null, 2));
         const user = new User(userProfile);
-
+        console.log('User iss:', user.toJSON());
         
         // Skip profile picture generation if disabled via environment variable
         if (process.env.PROFILE_PIC_GENERATION_ENABLED == 'true') {
