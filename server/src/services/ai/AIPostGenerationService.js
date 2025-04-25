@@ -7,7 +7,9 @@ const DynamoPostRepository = require('../../repositories/DynamoPostRepository');
 
 // Prompts as constants
 const PROMPTS = {
-    POST: (user, chars) => `Create a realistic Instagram post for a specific user given his personality and interests. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Realism is the main priority. The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
+    POST: (user, chars) => `Create a realistic Instagram post for a specific based on all the user characteristics. 
+    Your goal is to deeply *impersonate* this user — not just simulate an idealized post, but to generate something they would realistically share, based on how they think, feel, and behave. Their tone might be aesthetic or chaotic, emotional or ironic, awkward or eloquent — *whatever fits the actual personality traits*.
+    The post should feel like something posted by a *real person*, not a bot or a brand.
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
 Important: The content field should be ${chars} characters long.
@@ -16,7 +18,15 @@ The output should be valid JSON with two keys:
 photo: a description of the photo that would accompany the post.
 content: the Post text content. Important: the post content should be ${chars} characters in total, no more no less. 
 
-The user in question has the following characteristics. This is only for context, so you generate an appropiate post, but take it only as a guideline. No need to perfectly match the interests or personality.
+Important notes:
+- Avoid overfitting to hobbies. Interests are background context — they inform the user's world, but don’t constrain what they post about. 
+- Not all posts should be positive, deep, or aesthetic. Real people post low-effort selfies, messy food pics, awkward group photos, screenshots, venting, or emotional outbursts.
+- Use emojis, hashtags, or broken grammar *only when appropriate* for the user's tone and post context — don’t force them.
+- Again: You don't ALWAYS have to include emojis or hashtags, use with moderation and depending on context.
+- The tone and vibe should be consistent with how someone with this user's traits (age, gender, personality, interests, and background) would express themselves.
+- The content must be exactly ${chars} characters long.
+
+User profile:
 ${JSON.stringify(user, null, 2)}`,
 
     COMMENT: (user, post, chars) => `Generate a realistic, authentic Instagram comment from a user responding to their friend's post.
