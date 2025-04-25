@@ -18,7 +18,7 @@ photo: a description of the photo that will accompany the post text content. The
 content: the Post text content. Important: the post text content should be ${chars} characters in total, no more no less. 
 
 Important notes:
-- Avoid overfitting to hobbies. Interests are background context — they inform the user's world, but don’t constrain what they post about. 
+- Avoid overfitting to hobbies. Interests are background context — they inform the user's world, but don't constrain what they post about. 
 - Not all posts should be positive, deep, or aesthetic. Real people post low-effort selfies, messy food pics, awkward group photos, venting, etc.
 - Posts can include other — friends, a partner, family (group selfie, a night out, a casual hang with their partner).
 - Don't force use of emojis, hashtags, or broken grammar,  *only when appropriate* for the user's tone and post context.
@@ -46,7 +46,7 @@ Post image description: "${post.photo}"
 The comment should:
 - Fully impersonate this user. Don't simulate a generic commenter. Instead, deeply internalize the user's personality, age, gender, political orientation, biography, and interests to decide *how they would naturally react* — whether with praise, humor, memes, questions, teasing, flirtation, criticism, or indifference.
 - The comment can be any category: positive/praise, humor/memes/, question/curiosity, controversy/criticism, personal/teasing/in-group lingo. 
-- Use at most 1–2 emojis *only if* they fit naturally with the user’s style and the post’s context, don´t overdo it.
+- Use at most 1–2 emojis *only if* they fit naturally with the user's style and the post's context, don´t overdo it.
 - Feel authentic and realistic, as seen on real social media comments.
 - The comment should be ${chars} characters long.
 
@@ -80,6 +80,48 @@ class AIPostGenerationService {
         this.openaiClient = new OpenAIClient();
         this.stabilityClient = new StabilityAIClient();
         this.imageProvider = process.env.IMAGE_PROVIDER
+    }
+
+    /**
+     * Takes an array of category objects and returns a string with selected items based on their probabilities.
+     * Each selected string will be on a new line.
+     * @param {Array<{name: string, exclusive: boolean, options: Array<[number, string]>}>} categories - Array of category objects
+     * @returns {string} - Selected strings joined by newlines
+     */
+    customizePrompt(categories) {
+        if (!Array.isArray(categories)) {
+            throw new Error('Input must be an array of category objects');
+        }
+
+        const selectedStrings = [];
+
+        // Process each category
+        categories.forEach(category => {
+            if (!category.options || !Array.isArray(category.options)) {
+                throw new Error(`Category ${category.name} must have an array of options`);
+            }
+
+            // Filter valid options based on probability
+            const validOptions = category.options.filter(([probability, _]) => {
+                if (typeof probability !== 'number' || probability < 0 || probability > 1) {
+                    throw new Error('Probability must be a number between 0 and 1');
+                }
+                return Math.random() < probability;
+            });
+
+            if (validOptions.length > 0) {
+                if (category.exclusive) {
+                    // For exclusive categories, randomly select one option
+                    const randomIndex = Math.floor(Math.random() * validOptions.length);
+                    selectedStrings.push(validOptions[randomIndex][1]);
+                } else {
+                    // For non-exclusive categories, add all valid options
+                    validOptions.forEach(([_, string]) => selectedStrings.push(string));
+                }
+            }
+        });
+
+        return selectedStrings.join('\n');
     }
 
     // Helper function to get random number between min and max
@@ -138,7 +180,32 @@ class AIPostGenerationService {
             const { min, max } = this.getPostTokenLimits(distribution);
             const tokenCount = this.getRandomTokenCount(min, max);
 
-            const prompt = PROMPTS.POST(user, tokenCount);
+            let prompt = PROMPTS.POST(user, tokenCount);
+
+            let customPrompt = this.customizePrompt([
+                {
+                    name: "postType",
+                    exclusive: true,
+                    options: [
+                        //[0.5, "Extremely Important: This specific post should be hobby related"],
+                        [0.4, "Extremely Important: This specific post should be a personal life update post (can vary between minor to important milestones or life events)"],
+                        //[0.3, "Extremely Important: This specific post should be a selfie"],
+                        //[0.3, "Extremely Important: This specific post should be somehow related to current world events"],
+                        //[0.4, "Extremely Important: This specific post should be a relational/romantic post, with a partner, family, a friend or group of friends."]
+                    ]
+                },
+                {
+                    name: "postCharachteristics",
+                    exclusive: false,
+                    options: [
+                        [0.25, "Extremely Important: This specific post should have no people in the image."],
+                        [0.3, "Extremely Important: This specific post should be a low effort post (poorly cropped/bad lightning/blurred image)"],
+                        [0.7, "Extremely Important: This specific post should have no hashtags"],
+                        [0.7, "Extremely Important: This specific post should have no emojis in its text"],
+                    ]
+                }
+            ]);
+            prompt = prompt + '\n' + customPrompt;
 
                           
             console.log('\n=== Post Generation Prompt ===');
@@ -207,8 +274,29 @@ class AIPostGenerationService {
             const { min, max } = this.getPostTokenLimits(distribution);
             const tokenCount = this.getRandomTokenCount(min, max);
 
-            const prompt = PROMPTS.COMMENT(user, post, tokenCount);
+            let prompt = PROMPTS.COMMENT(user, post, tokenCount);
     
+            let customPrompt = this.customizePrompt([
+                {
+                    name: "commentType",
+                    exclusive: false,
+                    options: [
+                        [0.7, "Extremely Important: This specific comment should not have any emojis"],
+                        [0.2, "Extremely Important: This specific comment should have (light) bad/broken grammar or punctuation"],
+                    ]
+                },
+                {
+                    name: "commentType",
+                    exclusive: true,
+                    options: [
+                        [0.15, "Extremely Important: This specific comment should be indifferent / critique / disagreement (mild or strong) depending on context (user personality and post content)"],
+                        [0.2, "Extremely Important: This specific comment should be just a chill praise / positive comment"],
+                        [0.2, "Extremely Important: This specific comment should be flirty if it makes sense given the whole context of both users characteristics/status and the post content. If it doesn't make sense, then ignore this instruction."],
+                    ]
+                }
+            ]);
+
+            prompt = prompt + '\n' + customPrompt;
                   
             console.log('\n=== Comment Generation Prompt ===');
             console.log(prompt);
@@ -240,7 +328,34 @@ class AIPostGenerationService {
             );
             
 
-            const prompt = PROMPTS.USER_PROFILE(tokenCount);
+            let prompt = PROMPTS.USER_PROFILE(tokenCount);
+
+            let customPrompt = this.customizePrompt([
+                {
+                    name: "familyStatus",
+                    exclusive: false,
+                    options: [
+                        [0.6, "Extremely Important: This specific user shouldn't have any pets"],
+                        [0.4, "Extremely Important: This specific user should have a family (husband/wife/children)"]
+                    ]
+                },
+                {
+                    name: "politicalViews",
+                    exclusive: true,
+                    options: [
+                        [0.3, "Extremely Important: This specific user should be right wing or conservative leaning"]
+                    ]
+                },
+                {
+                    name: "personalityTraits",
+                    exclusive: false,
+                    options: [
+                        [0.3, "Extremely Important: This specific user should have clear negative traits, like narcissism, arrogance, impulsivity, anxiety, etc."]
+                    ]
+                }
+            ]);
+            prompt = prompt + '\n' + customPrompt;
+
             
             console.log('\n=== User Profile Generation Prompt ===');
             console.log(prompt);
