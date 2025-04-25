@@ -62,7 +62,7 @@ Generate only the comment text, no additional explanations.`,
 age:
 gender:
 personality: A short description of psychology, base yourself on the Big Five.
-biography: A short biography
+biography: A short biography of the user. Should include upbringing, studies, work, key life events, pets, family, friends and love life. Include names of relevant people.
 socioeconomic_status:
 political_orientation:
 nationality:
@@ -129,10 +129,10 @@ class AIPostGenerationService {
             const distribution = [
                 [10, 10],   
                 [20, 50],  
-                [40, 100],  
-                [15, 250],
+                [38, 100],  
+                [13, 250],
                 [10, 500], 
-                [5, 800] 
+                [9, 600] 
             ];
 
             const { min, max } = this.getPostTokenLimits(distribution);
