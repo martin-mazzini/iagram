@@ -21,6 +21,7 @@ content: the Post text content. Important: the post content should be ${chars} c
 Important notes:
 - Avoid overfitting to hobbies. Interests are background context — they inform the user's world, but don’t constrain what they post about. 
 - Not all posts should be positive, deep, or aesthetic. Real people post low-effort selfies, messy food pics, awkward group photos, screenshots, venting, or emotional outbursts.
+- Posts can -and sometimes should- include other — friends, a partner, family, pets. This could be a group selfie, a night out, a casual hang with their partner.
 - Use emojis, hashtags, or broken grammar *only when appropriate* for the user's tone and post context — don’t force them.
 - Again: You don't ALWAYS have to include emojis or hashtags, use with moderation and depending on context.
 - The tone and vibe should be consistent with how someone with this user's traits (age, gender, personality, interests, and background) would express themselves.
