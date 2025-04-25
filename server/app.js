@@ -23,6 +23,8 @@ console.log("Min Comment Characters:", process.env.MIN_COMMENT_CHARS);
 console.log("Min User Bio/Personality Chars:", process.env.MIN_USER_CHARS);
 console.log("Post Generation Temperature:", process.env.POST_GENERATION_TEMPERATURE);
 console.log("User Profile Temperature:", process.env.USER_PROFILE_TEMPERATURE);
+console.log("Profile Pic Generation Enabled:", process.env.PROFILE_PIC_GENERATION_ENABLED);
+console.log("Post Pic Generation Enabled:", process.env.POST_PIC_GENERATION_ENABLED);
 console.log("===========================\n");
 
 const app = require('./src/app');
