@@ -4,6 +4,30 @@ dnf install -y docker
 systemctl enable --now docker
 usermod -aG docker ec2-user
 
+# Install nginx and certbot
+dnf install -y nginx certbot python3-certbot-nginx
+
+# Configure nginx as reverse proxy
+cat > /etc/nginx/conf.d/app.conf << 'EOF'
+server {
+    listen 80;
+    server_name iagram.net www.iagram.net;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOF
+
+# Start and enable nginx
+systemctl enable --now nginx
+nginx -s reload
+
 # Install CloudWatch Logs agent
 dnf install -y amazon-cloudwatch-agent
 cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'EOF'
@@ -60,7 +84,13 @@ aws ecr get-login-password --region ${region} \
 docker rm -f myapp || true
 docker pull ${account}.dkr.ecr.${region}.amazonaws.com/${repo}:latest
 
-docker run -d --name myapp -p 80:${port} \
+docker run -d --name myapp -p 127.0.0.1:5000:${port} \
   --restart unless-stopped \
   --env-file /home/ec2-user/.env \
   ${account}.dkr.ecr.${region}.amazonaws.com/${repo}:latest
+
+# Obtain SSL certificate
+certbot --nginx --redirect -d iagram.net -d www.iagram.net --non-interactive --agree-tos 
+
+# Set up automatic renewal
+echo "0 0 * * * root certbot renew --quiet --deploy-hook 'systemctl reload nginx'" > /etc/cron.d/certbot-renew
