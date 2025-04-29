@@ -9,11 +9,14 @@ const ImageWithFallback = ({ userId, ...props }) => {
   };
 
   return (
-    <img 
-      src={imgSrc} 
-      onError={handleError}
-      {...props}
-    />
+    <div className="flex-shrink-0" style={{ width: props.className?.includes('w-') ? '1.5rem' : '2rem', height: props.className?.includes('h-') ? '1.5rem' : '2rem' }}>
+      <img 
+        src={imgSrc} 
+        onError={handleError}
+        className={`w-full h-full object-cover ${props.className || ''}`}
+        alt={props.alt || 'User avatar'}
+      />
+    </div>
   );
 };
 
@@ -104,7 +107,7 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
 
         {/* Comments Section */}
         {comments && comments.length > 0 && (
-          <div className="mt-2 px-3">
+          <div className="mt-2">
             {showAllComments ? (
               // Show all comments
               <div className="space-y-2">
@@ -118,11 +121,8 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
               </div>
             ) : (
               // Show preview and view more button
-              <div>
-                {/* Preview first two comments */}
-                <div className="space-y-2">
-                  {comments.slice(0, 2).map(renderComment)}
-                </div>
+              <div className="space-y-2">
+                {comments.slice(0, 2).map(renderComment)}
                 {comments.length > 2 && (
                   <button 
                     className="text-gray-500 text-sm"
