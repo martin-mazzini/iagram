@@ -90,7 +90,7 @@ docker run -d --name myapp -p 127.0.0.1:5000:${port} \
   ${account}.dkr.ecr.${region}.amazonaws.com/${repo}:latest
 
 # Obtain SSL certificate
-certbot --nginx --redirect -d iagram.net -d www.iagram.net --non-interactive --agree-tos 
+certbot --nginx --redirect -d iagram.net -d www.iagram.net --non-interactive --agree-tos --register-unsafely-without-email
 
 # Set up automatic renewal
 echo "0 0 * * * root certbot renew --quiet --deploy-hook 'systemctl reload nginx'" > /etc/cron.d/certbot-renew
