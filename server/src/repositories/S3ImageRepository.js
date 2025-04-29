@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
+const sharp = require('sharp');
 
 class S3ImageRepository {
     constructor() {
@@ -45,25 +46,31 @@ class S3ImageRepository {
     async saveImage(buffer, contentType = 'image/png', key = null) {
         try {
             // Use provided key or generate a random one
-            const imageKey = key ? `${key}.png` : `${uuidv4()}.png`;
+            const imageKey = key ? `${key}.webp` : `${uuidv4()}.webp`;
             
-            console.log('\n=== Saving to S3 ===');
+            console.log('\n=== Processing image for S3 ===');
             console.log('Key:', imageKey);
             console.log('Bucket:', this.bucketName);
+            
+            // Process image with Sharp
+            const processedBuffer = await sharp(buffer)
+                .webp({ quality: 85 }) // Convert to WebP with 85% quality
+                .toBuffer();
+            
+            console.log('Image processed successfully');
             console.log('==========================================\n');
             
             await this.s3.putObject({
                 Bucket: this.bucketName,
                 Key: imageKey,
-                Body: buffer,
-                ContentType: contentType
+                Body: processedBuffer,
+                ContentType: 'image/webp'
             }).promise();
 
             console.log('\n=== Successfully saved to S3 ===');
             console.log('Key:', imageKey);
             console.log('Bucket:', this.bucketName);
             console.log('==========================================\n');
-
 
             // Return the URL to access the image
             return `/images/${imageKey}`;

@@ -1,6 +1,22 @@
 import React, { useState } from 'react';
 import { FaHeart, FaRegHeart, FaRegComment, FaRegBookmark, FaBookmark, FaRegPaperPlane } from 'react-icons/fa';
 
+const ImageWithFallback = ({ userId, ...props }) => {
+  const [imgSrc, setImgSrc] = useState(`/images/${userId}.webp`);
+  
+  const handleError = () => {
+    setImgSrc(`/images/${userId}.png`);
+  };
+
+  return (
+    <img 
+      src={imgSrc} 
+      onError={handleError}
+      {...props}
+    />
+  );
+};
+
 const Post = ({ id, content, imageUrl, userId, username, likes, comments, createdAt }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -14,8 +30,8 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
 
   const renderComment = (comment) => (
     <div key={comment.id} className="text-sm flex items-center space-x-2">
-      <img 
-        src={`/images/${comment.userId}.png`}
+      <ImageWithFallback 
+        userId={comment.userId}
         alt="Commenter avatar"
         className="h-6 w-6 rounded-full object-cover"
       />
@@ -30,8 +46,8 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
     <div className="bg-white border border-gray-200 rounded-sm mb-4 max-w-xl mx-auto">
       {/* Post Header */}
       <div className="flex items-center p-3">
-        <img 
-          src={`/images/${userId}.png`}
+        <ImageWithFallback 
+          userId={userId}
           alt="User avatar"
           className="h-8 w-8 rounded-full object-cover"
         />
