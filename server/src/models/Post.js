@@ -11,7 +11,10 @@ class Post {
         username,
         likes,
         commentLimit,
-        commentedBy
+        commentedBy,
+        comments,
+        createdAt,
+        updatedAt
     }) {
         this.id = id || uuidv4();
         this.photo = photo;
@@ -22,9 +25,9 @@ class Post {
         this.likes = likes || 0;
         this.commentLimit = commentLimit || 0;
         this.commentedBy = commentedBy || [];
-        this.comments = []; // Array of Comment objects
-        this.createdAt = new Date();
-        this.updatedAt = new Date();
+        this.comments = comments || [];
+        this.createdAt = createdAt ? new Date(createdAt) : new Date();
+        this.updatedAt = updatedAt ? new Date(updatedAt) : new Date();
     }
 
     addComment(comment) {
@@ -57,6 +60,12 @@ class Post {
     }
 
     toJSON() {
+        const safeToISOString = (date) => {
+            if (!date) return null;
+            const d = (date instanceof Date) ? date : new Date(date);
+            return isNaN(d.getTime()) ? null : d.toISOString();
+        };
+
         return {
             id: this.id,
             photo: this.photo,
@@ -68,8 +77,8 @@ class Post {
             commentLimit: this.commentLimit,
             commentedBy: this.commentedBy,
             comments: this.comments.map(comment => comment.toJSON()),
-            createdAt: this.createdAt,
-            updatedAt: this.updatedAt
+            createdAt: safeToISOString(this.createdAt),
+            updatedAt: safeToISOString(this.updatedAt)
         };
     }
 }
