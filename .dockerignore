@@ -7,3 +7,8 @@ node_modules
 .env.production
 **/.env
 server/.env
+terraform/
+*.tfstate
+*.tfvars
+.terraform/
+server/dynamodb-admin
