@@ -13,88 +13,6 @@ class AIPostGenerationService {
         this.imageProvider = process.env.IMAGE_PROVIDER
     }
 
-    /**
-     * Takes an array of category objects and returns a string with selected items based on their probabilities.
-     * Each selected string will be on a new line.
-     * @param {Array<{name: string, exclusive: boolean, options: Array<[number, string]>}>} categories - Array of category objects
-     * @returns {string} - Selected strings joined by newlines
-     */
-    customizePrompt(categories) {
-        if (!Array.isArray(categories)) {
-            throw new Error('Input must be an array of category objects');
-        }
-
-        const selectedStrings = [];
-
-        // Process each category
-        categories.forEach(category => {
-            if (!category.options || !Array.isArray(category.options)) {
-                throw new Error(`Category ${category.name} must have an array of options`);
-            }
-
-            // Filter valid options based on probability
-            const validOptions = category.options.filter(([probability, _]) => {
-                if (typeof probability !== 'number' || probability < 0 || probability > 1) {
-                    throw new Error('Probability must be a number between 0 and 1');
-                }
-                return Math.random() < probability;
-            });
-
-            if (validOptions.length > 0) {
-                if (category.exclusive) {
-                    // For exclusive categories, randomly select one option
-                    const randomIndex = Math.floor(Math.random() * validOptions.length);
-                    selectedStrings.push(validOptions[randomIndex][1]);
-                } else {
-                    // For non-exclusive categories, add all valid options
-                    validOptions.forEach(([_, string]) => selectedStrings.push(string));
-                }
-            }
-        });
-
-        return selectedStrings.join('\n');
-    }
-
-    // Helper function to get random number between min and max
-    getRandomTokenCount(min, max) {
-        const minTokens = parseInt(min) || 0;
-        const maxTokens = parseInt(max) || minTokens;
-        return Math.floor(Math.random() * (maxTokens - minTokens + 1)) + minTokens;
-    }
-
-    getPostTokenLimits(distribution) {
-        // Validate distribution array
-        if (!Array.isArray(distribution) || distribution.length === 0) {
-            throw new Error('Distribution must be a non-empty array of [percentage, tokenCount] pairs');
-        }
-
-        // Validate total percentage is 100%
-        const totalPercentage = distribution.reduce((sum, [percentage]) => sum + percentage, 0);
-        if (Math.abs(totalPercentage - 100) > 0.01) {
-            throw new Error('Distribution percentages must sum to 100%');
-        }
-
-        // Generate random number between 0 and 100
-        const random = Math.random() * 100;
-        
-        // Find the bucket that contains our random number
-        let cumulativePercentage = 0;
-        for (let i = 0; i < distribution.length; i++) {
-            const [percentage, tokenCount] = distribution[i];
-            cumulativePercentage += percentage;
-            
-            if (random <= cumulativePercentage) {
-                // Calculate min and max for this bucket
-                const min = i === 0 ? 0 : distribution[i-1][1];
-                const max = tokenCount;
-                return { min, max };
-            }
-        }
-        
-        // Fallback to last bucket if something goes wrong
-        const lastBucket = distribution[distribution.length - 1];
-        return { min: 0, max: lastBucket[1] };
-    }
 
     async generatePostForUser(user) {
         try {
@@ -360,6 +278,96 @@ class AIPostGenerationService {
             throw new Error(`Failed to generate image using ${this.imageProvider}`);
         }
     }
+
+
+ /**
+     * Takes an array of category objects and returns a string with selected items based on their probabilities.
+     * Each selected string will be on a new line.
+     * @param {Array<{name: string, exclusive: boolean, options: Array<[number, string]>}>} categories - Array of category objects
+     * @returns {string} - Selected strings joined by newlines
+     */
+ customizePrompt(categories) {
+    if (!Array.isArray(categories)) {
+        throw new Error('Input must be an array of category objects');
+    }
+
+    const selectedStrings = [];
+
+    // Process each category
+    categories.forEach(category => {
+        if (!category.options || !Array.isArray(category.options)) {
+            throw new Error(`Category ${category.name} must have an array of options`);
+        }
+
+        // Filter valid options based on probability
+        const validOptions = category.options.filter(([probability, _]) => {
+            if (typeof probability !== 'number' || probability < 0 || probability > 1) {
+                throw new Error('Probability must be a number between 0 and 1');
+            }
+            return Math.random() < probability;
+        });
+
+        if (validOptions.length > 0) {
+            if (category.exclusive) {
+                // For exclusive categories, randomly select one option
+                const randomIndex = Math.floor(Math.random() * validOptions.length);
+                selectedStrings.push(validOptions[randomIndex][1]);
+            } else {
+                // For non-exclusive categories, add all valid options
+                validOptions.forEach(([_, string]) => selectedStrings.push(string));
+            }
+        }
+    });
+
+    return selectedStrings.join('\n');
+}
+
+// Helper function to get random number between min and max
+getRandomTokenCount(min, max) {
+    const minTokens = parseInt(min) || 0;
+    const maxTokens = parseInt(max) || minTokens;
+    return Math.floor(Math.random() * (maxTokens - minTokens + 1)) + minTokens;
+}
+
+getPostTokenLimits(distribution) {
+    // Validate distribution array
+    if (!Array.isArray(distribution) || distribution.length === 0) {
+        throw new Error('Distribution must be a non-empty array of [percentage, tokenCount] pairs');
+    }
+
+    // Validate total percentage is 100%
+    const totalPercentage = distribution.reduce((sum, [percentage]) => sum + percentage, 0);
+    if (Math.abs(totalPercentage - 100) > 0.01) {
+        throw new Error('Distribution percentages must sum to 100%');
+    }
+
+    // Generate random number between 0 and 100
+    const random = Math.random() * 100;
+    
+    // Find the bucket that contains our random number
+    let cumulativePercentage = 0;
+    for (let i = 0; i < distribution.length; i++) {
+        const [percentage, tokenCount] = distribution[i];
+        cumulativePercentage += percentage;
+        
+        if (random <= cumulativePercentage) {
+            // Calculate min and max for this bucket
+            const min = i === 0 ? 0 : distribution[i-1][1];
+            const max = tokenCount;
+            return { min, max };
+        }
+    }
+    
+    // Fallback to last bucket if something goes wrong
+    const lastBucket = distribution[distribution.length - 1];
+    return { min: 0, max: lastBucket[1] };
+}
+
+
+
+
+
+
 }
 
 module.exports = new AIPostGenerationService();

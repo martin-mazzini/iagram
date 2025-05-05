@@ -1,6 +1,6 @@
 const User = require('../../models/User');
 const DynamoUserRepository = require('../../repositories/DynamoUserRepository');
-const AIPostGenerationService = require('./AIPostGenerationService');
+const AIPostGenerationService = require('./AIGenService');
 const OpenAIClient = require('./OpenAIClient');
 const StabilityAIClient = require('./StabilityAIClient');
 const S3ImageRepository = require('../../repositories/S3ImageRepository');

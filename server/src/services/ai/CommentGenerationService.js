@@ -1,12 +1,12 @@
 const DynamoUserRepository = require('../../repositories/DynamoUserRepository');
 const DynamoPostRepository = require('../../repositories/DynamoPostRepository');
-const AIPostGenerationService = require('./AIPostGenerationService');
+const AIPostGenerationService = require('./AIGenService');
 const Comment = require('../../models/Comment');
 
 class CommentGenerationService {
 
 
-    static async generateCommentForRandomPost() {
+    static async generateCommentForRecentPosts() {
         // Get the latest 5 posts
         const { posts } = await DynamoPostRepository.findAllOrderedByDate(5);
         

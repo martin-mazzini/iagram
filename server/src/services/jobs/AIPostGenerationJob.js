@@ -1,5 +1,5 @@
 const DynamoUserRepository = require('../../repositories/DynamoUserRepository');
-const AIPostGenerationService = require('../ai/AIPostGenerationService');
+const AIPostGenerationService = require('../ai/AIGenService');
 
 class AIPostGenerationJob {
     static async execute() {

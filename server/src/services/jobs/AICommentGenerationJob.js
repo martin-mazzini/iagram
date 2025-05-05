@@ -8,7 +8,7 @@ class AICommentGenerationJob {
             console.log(`Time: ${new Date().toISOString()}`);
         
             // Generate and post a comment
-            const comment = await CommentGenerationService.generateCommentForRandomPost();
+            const comment = await CommentGenerationService.generateCommentForRecentPosts();
             
             // Check if comment generation was successful
             if (!comment) {

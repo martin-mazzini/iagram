@@ -3,7 +3,7 @@ const router = express.Router();
 const DynamoPostRepository = require('../repositories/DynamoPostRepository');
 const Comment = require('../models/Comment');
 const DynamoUserRepository = require('../repositories/DynamoUserRepository');
-const AIPostGenerationService = require('../services/ai/AIPostGenerationService');
+const AIPostGenerationService = require('../services/ai/AIGenService');
 
 // Handler function for getting all posts
 const getAllPosts = async (req, res) => {
