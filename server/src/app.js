@@ -8,7 +8,6 @@ const path = require('path');
 const { createTable } = require('./config/dynamodb');
 const S3ImageRepository = require('./repositories/S3ImageRepository');
 
-// Check if --local flag is present
 const isLocal = process.argv.includes('--local');
 if (isLocal) {
     require('dotenv').config();
@@ -19,15 +18,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Initialize services
+
 async function initializeServices() {
     try {
-        // Create DynamoDB table
         await createTable();
-        
-        // Initialize S3 repository
         await S3ImageRepository.initialize();
-        
         console.log('Services initialized successfully');
     } catch (error) {
         console.error('Error initializing services:', error);
@@ -35,10 +30,8 @@ async function initializeServices() {
     }
 }
 
-// Initialize services before starting the server
 initializeServices()
     .then(() => {
-        // Routes
         if (process.env.ENABLE_DEV_ENDPOINTS === 'true') {
             app.use('/api/ai', aiRoutes);
             app.use('/api/users', userRoutes);
@@ -48,11 +41,10 @@ initializeServices()
             // In production, only expose the GET /posts endpoint
             app.get('/api/posts', getAllPosts);
         }
-
         
         // S3 proxy for images
         app.use('/images', (req, res) => {
-            const key = req.path.substring(1); // Remove leading slash
+            const key = req.path.substring(1); 
             const params = {
                 Bucket: process.env.S3_BUCKET_NAME || 'images',
                 Key: key
