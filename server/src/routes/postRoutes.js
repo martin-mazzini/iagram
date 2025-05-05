@@ -27,7 +27,7 @@ router.get('/', getAllPosts);
 
 // Development-only routes
 if (process.env.ENABLE_DEV_ENDPOINTS === 'true') {
-    // Rebuild the feed index (admin operation)
+    // Rebuild the feed index 
     router.get('/rebuild-feed', async (req, res) => {
         try {
             const indexedCount = await DynamoPostRepository.rebuildFeedIndex();

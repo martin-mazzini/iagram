@@ -3,15 +3,11 @@ const cors = require('cors');
 const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
 const { router: postRoutes, getAllPosts } = require('./routes/postRoutes');
-const jobRoutes = require('./routes/jobRoutes');
 const path = require('path');
 const { createTable } = require('./config/dynamodb');
 const S3ImageRepository = require('./repositories/S3ImageRepository');
 
 const isLocal = process.argv.includes('--local');
-if (isLocal) {
-    require('dotenv').config();
-}
 
 const app = express();
 
@@ -36,7 +32,6 @@ initializeServices()
             app.use('/api/ai', aiRoutes);
             app.use('/api/users', userRoutes);
             app.use('/api/posts', postRoutes);
-            app.use('/api/jobs', jobRoutes);
         } else {
             // In production, only expose the GET /posts endpoint
             app.get('/api/posts', getAllPosts);
