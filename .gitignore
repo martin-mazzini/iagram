@@ -1,6 +1,9 @@
 node_modules
 .vscode/
 
+/docker/localstack/
+/docker/dynamodb/
+
 # Terraform
 **/.terraform/*
 *.tfstate
