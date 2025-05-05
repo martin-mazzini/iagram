@@ -8,6 +8,7 @@ class BackgroundJobService {
         this.jobs = {};
     }
 
+    
     initialize() {
         this.setupPostGenerationJob();
         this.setupCommentGenerationJob();

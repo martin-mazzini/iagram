@@ -7,33 +7,46 @@ const DynamoPostRepository = require('../../repositories/DynamoPostRepository');
 
 // Prompts as constants
 const PROMPTS = {
-    POST: (user, chars) => `Create a realistic Instagram post for a specific user given his personality and interests. Special emphasis on realistic, Instagram posts are not always aesthetic, or perfectly worded, or with no grammar mistakes. Realism is the main priority. The POST doesn't necessarily have to be related to the User interests, it's just background context. Note 2: You don't ALWAYS have to include emojis or hashtags, you can if you feel it suits the realistic tone.
+    POST: (user, chars) => `Create a realistic Instagram post for a specific based on all the user characteristics. 
+    Your goal is to deeply *impersonate* this user — not just simulate an idealized post, but to generate something they would realistically share, based on how they think, feel, and behave. Their tone might be aesthetic or chaotic, emotional or ironic, awkward or eloquent — *whatever fits the actual personality traits*.
+    The post should feel like something posted by a *real person*, not a bot or a brand.
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
-Important: The content field should be ${chars} characters long.
 
 The output should be valid JSON with two keys:
-photo: a description of the photo that would accompany the post.
-content: the Post text content. Important: the post content should be ${chars} characters in total, no more no less. 
+photo: a description of the photo that will accompany the post text content. The description should include all the neccesary details needed for an IA to correctly and accurately generate the Post image without any additional context.
+content: the Post text content. Important: the post text content should be ${chars} characters in total, no more no less. 
 
-The user in question has the following characteristics. This is only for context, so you generate an appropiate post, but take it only as a guideline. No need to perfectly match the interests or personality.
+Important notes:
+- Avoid overfitting to hobbies. Interests are background context — they inform the user's world, but don't constrain what they post about. 
+- Not all posts should be positive, deep, or aesthetic. Real people post low-effort selfies, messy food pics, awkward group photos, venting, etc.
+- Posts can include other — friends, a partner, family (group selfie, a night out, a casual hang with their partner).
+- Don't force use of emojis, hashtags, or broken grammar,  *only when appropriate* for the user's tone and post context.
+- Again: You don't ALWAYS have to include emojis or hashtags, use with moderation and depending on context.
+
+User profile:
 ${JSON.stringify(user, null, 2)}`,
 
-    COMMENT: (user, post, chars) => `Generate a realistic, authentic Instagram comment for a user responding to their friend's post. Comment doesn't always need to be positive, or 
-    happy, or agreeable. It can be negative, or sarcastic, or even offensive, depending on the user's personality and the post content.
+    COMMENT: (user, post, chars) => `Generate a realistic, authentic Instagram comment from a user responding to their friend's post.
 
 User characteristics:
+Name: ${user.name}
+Age: ${user.age}
+Gender: ${user.gender}
 Personality: ${user.personality}
 Interests: ${user.interests.join(', ')}
+Biography: ${user.biography}
+Socioeconomic status: ${user.socioeconomicStatus}
+Political orientation: ${user.politicalOrientation}
 
 Friend's post content:
-"${post.content}"
+Post text content: "${post.content}"
+Post image description: "${post.photo}"
 
 The comment should:
-- Be written in a casual, social media style.
-- Match the user's personality and tone.
-- It can be funny, sarcastic, or even negative (BUT NO ALWAYS, do not force it). Instead, base yourself on the user's personality and the post content to determine the appropiate tone.
-- Potentially include 1-2 relevant emojis (depending on the post content and the user's personality).
+- Fully impersonate this user. Don't simulate a generic commenter. Instead, deeply internalize the user's personality, age, gender, political orientation, biography, and interests to decide *how they would naturally react* — whether with praise, humor, memes, questions, teasing, flirtation, criticism, or indifference.
+- The comment can be any category: positive/praise, humor/memes/, question/curiosity, controversy/criticism, personal/teasing/in-group lingo. 
+- Use at most 1–2 emojis *only if* they fit naturally with the user's style and the post's context, don´t overdo it.
 - Feel authentic and realistic, as seen on real social media comments.
 - The comment should be ${chars} characters long.
 
@@ -45,16 +58,17 @@ Generate only the comment text, no additional explanations.`,
     The personality can include both positive and negative traits, and should reflect realistic psychological diversity.
     
     Output should be JSON format with the respective keys:
+name: The real name.
 age:
 gender:
 personality: A short description of psychology, base yourself on the Big Five.
-biography: A short biography
+biography: A short biography of the user. Should include upbringing, studies, work, key life events, pets, family, friends and love life. Include names of relevant people.
 socioeconomic_status:
 political_orientation:
 nationality:
 interests:
 name:
-instagram_username:
+instagram_username: The instagram username of the user.
 
 Important: Return ONLY valid JSON, no markdown formatting or additional text.
 Important: The total count of charachters in your answer should be ${chars} for the whole user profile.
@@ -68,6 +82,48 @@ class AIPostGenerationService {
         this.imageProvider = process.env.IMAGE_PROVIDER
     }
 
+    /**
+     * Takes an array of category objects and returns a string with selected items based on their probabilities.
+     * Each selected string will be on a new line.
+     * @param {Array<{name: string, exclusive: boolean, options: Array<[number, string]>}>} categories - Array of category objects
+     * @returns {string} - Selected strings joined by newlines
+     */
+    customizePrompt(categories) {
+        if (!Array.isArray(categories)) {
+            throw new Error('Input must be an array of category objects');
+        }
+
+        const selectedStrings = [];
+
+        // Process each category
+        categories.forEach(category => {
+            if (!category.options || !Array.isArray(category.options)) {
+                throw new Error(`Category ${category.name} must have an array of options`);
+            }
+
+            // Filter valid options based on probability
+            const validOptions = category.options.filter(([probability, _]) => {
+                if (typeof probability !== 'number' || probability < 0 || probability > 1) {
+                    throw new Error('Probability must be a number between 0 and 1');
+                }
+                return Math.random() < probability;
+            });
+
+            if (validOptions.length > 0) {
+                if (category.exclusive) {
+                    // For exclusive categories, randomly select one option
+                    const randomIndex = Math.floor(Math.random() * validOptions.length);
+                    selectedStrings.push(validOptions[randomIndex][1]);
+                } else {
+                    // For non-exclusive categories, add all valid options
+                    validOptions.forEach(([_, string]) => selectedStrings.push(string));
+                }
+            }
+        });
+
+        return selectedStrings.join('\n');
+    }
+
     // Helper function to get random number between min and max
     getRandomTokenCount(min, max) {
         const minTokens = parseInt(min) || 0;
@@ -75,15 +131,81 @@ class AIPostGenerationService {
         return Math.floor(Math.random() * (maxTokens - minTokens + 1)) + minTokens;
     }
 
+    getPostTokenLimits(distribution) {
+        // Validate distribution array
+        if (!Array.isArray(distribution) || distribution.length === 0) {
+            throw new Error('Distribution must be a non-empty array of [percentage, tokenCount] pairs');
+        }
+
+        // Validate total percentage is 100%
+        const totalPercentage = distribution.reduce((sum, [percentage]) => sum + percentage, 0);
+        if (Math.abs(totalPercentage - 100) > 0.01) {
+            throw new Error('Distribution percentages must sum to 100%');
+        }
+
+        // Generate random number between 0 and 100
+        const random = Math.random() * 100;
+        
+        // Find the bucket that contains our random number
+        let cumulativePercentage = 0;
+        for (let i = 0; i < distribution.length; i++) {
+            const [percentage, tokenCount] = distribution[i];
+            cumulativePercentage += percentage;
+            
+            if (random <= cumulativePercentage) {
+                // Calculate min and max for this bucket
+                const min = i === 0 ? 0 : distribution[i-1][1];
+                const max = tokenCount;
+                return { min, max };
+            }
+        }
+        
+        // Fallback to last bucket if something goes wrong
+        const lastBucket = distribution[distribution.length - 1];
+        return { min: 0, max: lastBucket[1] };
+    }
+
     async generatePostForUser(user) {
         try {
+            // Define the token distribution buckets <frequency, chars>
+            const distribution = [
+                [10, 10],   
+                [20, 50],  
+                [38, 100],  
+                [13, 250],
+                [10, 500], 
+                [9, 600] 
+            ];
 
-            const tokenCount = this.getRandomTokenCount(
-                process.env.MIN_TOKENS_POST,
-                process.env.MAX_TOKENS_POST
-            );
+            const { min, max } = this.getPostTokenLimits(distribution);
+            const tokenCount = this.getRandomTokenCount(min, max);
 
-            const prompt = PROMPTS.POST(user, tokenCount);
+            let prompt = PROMPTS.POST(user, tokenCount);
+
+            let customPrompt = this.customizePrompt([
+                {
+                    name: "postType",
+                    exclusive: true,
+                    options: [
+                        //[0.5, "Extremely Important: This specific post should be hobby related"],
+                        [0.4, "Extremely Important: This specific post should be a personal life update post (can vary between minor to important milestones or life events)"],
+                        //[0.3, "Extremely Important: This specific post should be a selfie"],
+                        //[0.3, "Extremely Important: This specific post should be somehow related to current world events"],
+                        //[0.4, "Extremely Important: This specific post should be a relational/romantic post, with a partner, family, a friend or group of friends."]
+                    ]
+                },
+                {
+                    name: "postCharachteristics",
+                    exclusive: false,
+                    options: [
+                        [0.25, "Extremely Important: This specific post should have no people in the image."],
+                        [0.3, "Extremely Important: This specific post should be a low effort post (poorly cropped/bad lightning/blurred image)"],
+                        [0.7, "Extremely Important: This specific post should have no hashtags"],
+                        [0.7, "Extremely Important: This specific post should have no emojis in its text"],
+                    ]
+                }
+            ]);
+            prompt = prompt + '\n' + customPrompt;
 
                           
             console.log('\n=== Post Generation Prompt ===');
@@ -92,30 +214,39 @@ class AIPostGenerationService {
           
             // Generate both text content and photo description
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: tokenCount + 200,
+                max_tokens: 400,
                 temperature: parseFloat(process.env.POST_GENERATION_TEMPERATURE) || 0.8
             });
 
             console.log('Raw AI Response:', response.content);
-
+            
             // Parse the JSON response
             let parsedResponse;
             try {
                 const possibleJson = response.content.replace(/```json\n?|\n?```/g, '').trim();
                 parsedResponse = JSON.parse(possibleJson);
+                console.log('User is:', user.biography);
+                console.log('Post content is:', parsedResponse.content);
+                console.log('Post image prompt is:', parsedResponse.photo);
             } catch (parseError) {
                 console.error('Parse Error:', parseError);
                 console.error('Invalid JSON received from ChatGPT:', response.content);
                 throw new Error('Failed to parse AI response as JSON');
             }
             
+            let imageUrl;
+            if (process.env.POST_PIC_GENERATION_ENABLED == 'true') {
             // Generate image based on the photo description
             const imagePrompt = `Generate a realistic photo of: ${parsedResponse.photo}, as it would be
             taken by someone with the following characteristics: ${JSON.stringify(user, null, 2)}`;
-            const imageUrl = await this.generateImage(imagePrompt);
+            imageUrl = await this.generateImage(imagePrompt);
+            }else{
+                console.log('Post picture generation is disabled. Skipping...');
+            }
 
             const post = new Post({
                 content: parsedResponse.content,
+                photo: parsedResponse.photo,
                 imageUrl: imageUrl,
                 userId: user.id,
                 username: user.username
@@ -130,23 +261,56 @@ class AIPostGenerationService {
 
     async generateCommentForPost(user, post) {
         try {
-            // Generate random token count between MIN and MAX
-            const tokenCount = this.getRandomTokenCount(
-                process.env.MIN_TOKENS_COMMENT,
-                process.env.MAX_TOKENS_COMMENT
-            );
+            const distribution = [
+                [15,  10],   
+                [20,  50],   
+                [5,  70],
+                [40, 100],   
+                [10, 200],  
+                [5,  400],  
+                [5,  500]  
+            ];
 
-            const prompt = PROMPTS.COMMENT(user, post, tokenCount);
+            const { min, max } = this.getPostTokenLimits(distribution);
+            const tokenCount = this.getRandomTokenCount(min, max);
+
+            let prompt = PROMPTS.COMMENT(user, post, tokenCount);
     
+            let customPrompt = this.customizePrompt([
+                {
+                    name: "commentType",
+                    exclusive: false,
+                    options: [
+                        [0.7, "Extremely Important: This specific comment should not have any emojis"],
+                        [0.2, "Extremely Important: This specific comment should have (light) bad/broken grammar or punctuation"],
+                    ]
+                },
+                {
+                    name: "commentType",
+                    exclusive: true,
+                    options: [
+                        [0.15, "Extremely Important: This specific comment should be indifferent / critique / disagreement (mild or strong) depending on context (user personality and post content)"],
+                        [0.2, "Extremely Important: This specific comment should be just a chill praise / positive comment"],
+                        [0.2, "Extremely Important: This specific comment should be flirty if it makes sense given the whole context of both users characteristics/status and the post content. If it doesn't make sense, then ignore this instruction."],
+                    ]
+                }
+            ]);
+
+            prompt = prompt + '\n' + customPrompt;
                   
             console.log('\n=== Comment Generation Prompt ===');
             console.log(prompt);
             console.log('=======================================\n');
             
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: tokenCount + 200,
+                max_tokens: 300,
                 temperature: 0.8
             });
+
+            console.log('\n=== Generated Comment ===');
+            console.log(response.content);
+            console.log('=======================================\n');
+            
 
             return response.content;
         } catch (error) {
@@ -164,14 +328,41 @@ class AIPostGenerationService {
             );
             
 
-            const prompt = PROMPTS.USER_PROFILE(tokenCount);
+            let prompt = PROMPTS.USER_PROFILE(tokenCount);
+
+            let customPrompt = this.customizePrompt([
+                {
+                    name: "familyStatus",
+                    exclusive: false,
+                    options: [
+                        [0.6, "Extremely Important: This specific user shouldn't have any pets"],
+                        [0.4, "Extremely Important: This specific user should have a family (husband/wife/children)"]
+                    ]
+                },
+                {
+                    name: "politicalViews",
+                    exclusive: true,
+                    options: [
+                        [0.3, "Extremely Important: This specific user should be right wing or conservative leaning"]
+                    ]
+                },
+                {
+                    name: "personalityTraits",
+                    exclusive: false,
+                    options: [
+                        [0.3, "Extremely Important: This specific user should have clear negative traits, like narcissism, arrogance, impulsivity, anxiety, etc."]
+                    ]
+                }
+            ]);
+            prompt = prompt + '\n' + customPrompt;
+
             
             console.log('\n=== User Profile Generation Prompt ===');
             console.log(prompt);
             console.log('=======================================\n');
             
             const response = await this.openaiClient.generateResponse(prompt, {
-                max_tokens: tokenCount + 200,
+                max_tokens: 500,
                 temperature: parseFloat(process.env.USER_PROFILE_TEMPERATURE) || 0.8
             });
             
@@ -191,7 +382,7 @@ class AIPostGenerationService {
                 throw new Error('AI response is not a valid object');
             }
 
-            const requiredFields = ['age', 'gender', 'personality', 'biography', 'nationality', 'interests', 'instagram_username'];
+            const requiredFields = ['age', 'gender', 'personality', 'biography', 'nationality', 'interests', 'instagram_username', 'name'];
             const missingFields = requiredFields.filter(field => !userData[field]);
             
             if (missingFields.length > 0) {
@@ -201,6 +392,7 @@ class AIPostGenerationService {
 
             const userModelData = {
                 id: require('uuid').v4(),
+                name: userData.name,
                 username: userData.instagram_username,
                 age: userData.age,
                 gender: userData.gender,
@@ -213,6 +405,7 @@ class AIPostGenerationService {
                 friends: []
             };
 
+            console.log('User model data is:', JSON.stringify(userModelData, null, 2));
             return userModelData;
         } catch (error) {
             console.error('Error in generateUserProfile:', error);

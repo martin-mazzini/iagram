@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const DynamoPostRepository = require('../repositories/DynamoPostRepository');
 const Comment = require('../models/Comment');
+const DynamoUserRepository = require('../repositories/DynamoUserRepository');
+const AIPostGenerationService = require('../services/ai/AIPostGenerationService');
 
 // Handler function for getting all posts
 const getAllPosts = async (req, res) => {
@@ -64,21 +66,37 @@ if (process.env.ENABLE_DEV_ENDPOINTS === 'true') {
         }
     });
 
+    
     // Add a comment to a post
-    router.post('/:id/comments', async (req, res) => {
+    router.get('/:id/comments', async (req, res) => {
         try {
-            const { text, userId, username } = req.body;
             const postId = req.params.id;
-
-            if (!text || !userId || !username) {
-                return res.status(400).json({ error: 'Text, userId, and username are required' });
+            
+            // Get the post
+            const post = await DynamoPostRepository.findById(postId);
+            if (!post) {
+                return res.status(404).json({ error: 'Post not found' });
             }
 
+            // Get all users
+            const users = await DynamoUserRepository.findAll();
+            if (!users || users.length === 0) {
+                return res.status(404).json({ error: 'No users found in the system' });
+            }
+
+            // Select a random user
+            const randomIndex = Math.floor(Math.random() * users.length);
+            const randomUser = users[randomIndex];
+
+            // Generate comment using AIPostGenerationService
+            const commentText = await AIPostGenerationService.generateCommentForPost(randomUser, post);
+
+            // Create and save the comment
             const comment = new Comment({
-                text,
-                userId,
-                username,
-                postId
+                text: commentText,
+                userId: randomUser.id,
+                username: randomUser.username,
+                postId: postId
             });
 
             await DynamoPostRepository.addComment(postId, comment);

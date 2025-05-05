@@ -1,6 +1,25 @@
 import React, { useState } from 'react';
 import { FaHeart, FaRegHeart, FaRegComment, FaRegBookmark, FaBookmark, FaRegPaperPlane } from 'react-icons/fa';
 
+const ImageWithFallback = ({ userId, ...props }) => {
+  const [imgSrc, setImgSrc] = useState(`/images/${userId}.webp`);
+  
+  const handleError = () => {
+    setImgSrc(`/images/${userId}.png`);
+  };
+
+  return (
+    <div className="flex-shrink-0" style={{ width: props.className?.includes('w-') ? '1.5rem' : '2rem', height: props.className?.includes('h-') ? '1.5rem' : '2rem' }}>
+      <img 
+        src={imgSrc} 
+        onError={handleError}
+        className={`w-full h-full object-cover ${props.className || ''}`}
+        alt={props.alt || 'User avatar'}
+      />
+    </div>
+  );
+};
+
 const Post = ({ id, content, imageUrl, userId, username, likes, comments, createdAt }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -14,8 +33,8 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
 
   const renderComment = (comment) => (
     <div key={comment.id} className="text-sm flex items-center space-x-2">
-      <img 
-        src={`/images/${comment.userId}.png`}
+      <ImageWithFallback 
+        userId={comment.userId}
         alt="Commenter avatar"
         className="h-6 w-6 rounded-full object-cover"
       />
@@ -30,8 +49,8 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
     <div className="bg-white border border-gray-200 rounded-sm mb-4 max-w-xl mx-auto">
       {/* Post Header */}
       <div className="flex items-center p-3">
-        <img 
-          src={`/images/${userId}.png`}
+        <ImageWithFallback 
+          userId={userId}
           alt="User avatar"
           className="h-8 w-8 rounded-full object-cover"
         />
@@ -88,7 +107,7 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
 
         {/* Comments Section */}
         {comments && comments.length > 0 && (
-          <div className="mt-2 px-3">
+          <div className="mt-2">
             {showAllComments ? (
               // Show all comments
               <div className="space-y-2">
@@ -102,11 +121,8 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
               </div>
             ) : (
               // Show preview and view more button
-              <div>
-                {/* Preview first two comments */}
-                <div className="space-y-2">
-                  {comments.slice(0, 2).map(renderComment)}
-                </div>
+              <div className="space-y-2">
+                {comments.slice(0, 2).map(renderComment)}
                 {comments.length > 2 && (
                   <button 
                     className="text-gray-500 text-sm"

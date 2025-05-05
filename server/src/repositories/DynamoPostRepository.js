@@ -12,7 +12,7 @@ class DynamoPostRepository extends BaseRepository {
         post.likes = Math.floor(Math.random() * 200);
         
         // Add random comment limit between 0 and 10
-        post.commentLimit = Math.floor(Math.random() * 11);
+        post.commentLimit = Math.floor(Math.random() * 15);
         
         // Format the createdAt date for sorting
         const createdAtISO = post.createdAt.toISOString();

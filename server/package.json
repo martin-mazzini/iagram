@@ -27,6 +27,7 @@
     "node-cron": "^3.0.3",
     "node-schedule": "^2.1.1",
     "openai": "^4.28.0",
+    "sharp": "^0.34.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
