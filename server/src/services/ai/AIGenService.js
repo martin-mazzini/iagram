@@ -140,7 +140,6 @@ class AIPostGenerationService {
                     options: [
                         [0.15, "Extremely Important: This specific comment should be indifferent / critique / disagreement (mild or strong) depending on context (user personality and post content)"],
                         [0.2, "Extremely Important: This specific comment should be just a chill praise / positive comment"],
-                        [0.2, "Extremely Important: This specific comment should be flirty if it makes sense given the whole context of both users characteristics/status and the post content. If it doesn't make sense, then ignore this instruction."],
                     ]
                 }
             ]);
