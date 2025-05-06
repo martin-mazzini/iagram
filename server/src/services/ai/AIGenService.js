@@ -36,11 +36,11 @@ class AIPostGenerationService {
                     name: "postType",
                     exclusive: true,
                     options: [
-                        //[0.5, "Extremely Important: This specific post should be hobby related"],
+                        [0.4, "Extremely Important: This specific post should be hobby related"],
                         [0.4, "Extremely Important: This specific post should be a personal life update post (can vary between minor to important milestones or life events)"],
-                        //[0.3, "Extremely Important: This specific post should be a selfie"],
-                        //[0.3, "Extremely Important: This specific post should be somehow related to current world events"],
-                        //[0.4, "Extremely Important: This specific post should be a relational/romantic post, with a partner, family, a friend or group of friends."]
+                        [0.3, "Extremely Important: This specific post should be a selfie"],
+                        [0.15, "Extremely Important: This specific post should be somehow related to current world events"],
+                        [0.4, "Extremely Important: This specific post should be a relational/romantic post, with a partner, family, a friend or group of friends."]
                     ]
                 },
                 {
@@ -186,13 +186,6 @@ class AIPostGenerationService {
                     options: [
                         [0.6, "Extremely Important: This specific user shouldn't have any pets"],
                         [0.4, "Extremely Important: This specific user should have a family (husband/wife/children)"]
-                    ]
-                },
-                {
-                    name: "politicalViews",
-                    exclusive: true,
-                    options: [
-                        [0.3, "Extremely Important: This specific user should be right wing or conservative leaning"]
                     ]
                 },
                 {
