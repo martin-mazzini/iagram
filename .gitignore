@@ -3,6 +3,7 @@ node_modules
 docker/localstack/
 docker/dynamodb/
 **/.terraform/
+**/tf.log
 *.tfstate
 *.tfstate.*
 *.tfvars
