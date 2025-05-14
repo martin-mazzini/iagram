@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaHeart, FaRegHeart, FaRegComment, FaRegBookmark, FaBookmark, FaRegPaperPlane } from 'react-icons/fa';
+import ImagePlaceholder from './ImagePlaceholder';
 
 const ImageWithFallback = ({ userId, ...props }) => {
   const [imgSrc, setImgSrc] = useState(`/images/${userId}.webp`);
@@ -25,6 +26,7 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
   const [isSaved, setIsSaved] = useState(false);
   const [likesCount, setLikesCount] = useState(likes);
   const [showAllComments, setShowAllComments] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -59,10 +61,12 @@ const Post = ({ id, content, imageUrl, userId, username, likes, comments, create
 
       {/* Post Image */}
       <div className="relative">
+        {isImageLoading && <ImagePlaceholder />}
         <img 
           src={imageUrl} 
           alt="Post content"
-          className="w-full object-cover"
+          className={`w-full object-cover ${isImageLoading ? 'hidden' : 'block'}`}
+          onLoad={() => setIsImageLoading(false)}
           onDoubleClick={handleLike}
         />
       </div>
