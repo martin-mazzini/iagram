@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Post from './components/Post';
+import Spinner from './components/Spinner';
 import api from './services/api';
+
+// Helper function to add delay
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -62,11 +66,7 @@ function App() {
   }, [handleScroll]);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-xl">Loading posts...</div>
-      </div>
-    );
+    return <Spinner />;
   }
 
   if (error) {
@@ -85,7 +85,7 @@ function App() {
         ))}
         {isLoadingMore && (
           <div className="flex justify-center items-center py-4">
-            <div className="text-lg">Loading more posts...</div>
+            <div className="w-6 h-6 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
           </div>
         )}
         {!hasMore && posts.length > 0 && (
