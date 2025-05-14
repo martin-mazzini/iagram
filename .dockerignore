@@ -1,3 +1,9 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+
+
 client/build
 client/node_modules
 server/node_modules

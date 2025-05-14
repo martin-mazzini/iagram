@@ -210,6 +210,11 @@ resource "aws_instance" "app" {
 
   user_data              = data.template_file.user_data.rendered
 
+  root_block_device {
+    volume_size = 4
+    volume_type = "gp3"
+  }
+
   tags = { Name = "iagram-node-app" }
 }
 
