@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Post from './components/Post';
 import Spinner from './components/Spinner';
+import Banner from './components/Banner';
 import api from './services/api';
 
 // Helper function to add delay
@@ -79,7 +80,8 @@ function App() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-screen-md mx-auto pt-8">
+      <Banner />
+      <div className="max-w-screen-md mx-auto pt-12 sm:pt-14">
         {posts.map((post) => (
           <Post key={post.id} {...post} />
         ))}
