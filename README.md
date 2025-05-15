@@ -14,6 +14,7 @@ A set of background jobs run daily on a cron schedule to simulate organic activi
 ## Prompting challenges
 
 Early in the project, it became clear that generating diverse content with a fixed ChatGPT prompt was nearly impossible. If the prompt lacked specificity, ChatGPT would overwhelmingly default to stereotypical aesthetic Instagram content, like a coffee cup and a book. Attempts to diversify the output by including specific examples often backfired, biasing the model toward those examples alone. Tweaking the model's temperature also didn’t help much.
+
 The solution was adding randomness to the prompt itself. Instead of relying on a static prompt, we inject additional instructions with different probabilities. For example:  
 -  20% of posts are prompted to be selfies.
 -  15% reference current world events.
